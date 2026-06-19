@@ -1,0 +1,8 @@
+change: room-video-webrtc
+status: implemented
+phase: verify
+created: 2026-06-19
+domains:
+  - calls
+  - ui
+  - realtime

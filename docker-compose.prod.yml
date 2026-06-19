@@ -23,10 +23,15 @@ services:
     image: ghcr.io/${GHCR_OWNER}/app-habitacion-web:${IMAGE_TAG}
     container_name: app-habitacion-web
     restart: unless-stopped
-    env_file:
-      - .env.prod
     environment:
+      NODE_ENV: ${NODE_ENV}
+      JWT_SECRET: ${JWT_SECRET}
       MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/${MONGODB_DB}?authSource=admin
+      MONGODB_DB: ${MONGODB_DB}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_ROOM_KEY: ${NEXT_PUBLIC_ROOM_KEY:-}
+      BOOTSTRAP_ENABLED: ${BOOTSTRAP_ENABLED}
+      TZ: ${TZ}
     depends_on:
       mongodb:
         condition: service_healthy

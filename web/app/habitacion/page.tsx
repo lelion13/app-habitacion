@@ -6,6 +6,7 @@ import type { StaffRole, CallType } from "@/lib/types";
 import { ROLE_LABELS, CALL_TYPE_LABELS } from "@/lib/types";
 import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
 import { PageHeader } from "@/components/PageHeader";
+import { VideoCallSession } from "@/components/VideoCallSession";
 
 interface RoomInfo {
   id: string;
@@ -161,10 +162,22 @@ function HabitacionContent() {
 
   const roles: StaffRole[] = ["nurse", "quality", "doctor"];
   const hasActiveCall = activeCall !== null;
+  const showVideoSession =
+    activeCall?.type === "video" && activeCall.status === "accepted";
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-teal-50 to-white px-4 py-8">
-      <div className="mx-auto max-w-lg">
+      {showVideoSession && room && (
+        <VideoCallSession
+          callId={activeCall.id}
+          role="room"
+          roomKey={roomKey}
+          roomId={room.id}
+          fullscreen
+        />
+      )}
+
+      <div className={`mx-auto max-w-lg ${showVideoSession ? "hidden" : ""}`}>
         <PageHeader
           title={room!.label}
           subtitle={`Piso ${room!.floor} · Sector ${room!.sector}`}

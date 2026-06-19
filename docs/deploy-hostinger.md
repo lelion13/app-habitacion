@@ -12,6 +12,10 @@ Stack: `/docker/app-habitacion/`
 
 ## Primer deploy
 
+**Hostinger MCP:** pasar variables en `environment` del proyecto (no usar `env_file: .env.prod` en el compose — el panel no crea ese archivo). Las variables se interpolan vía `.env` del stack.
+
+**SSH manual:**
+
 ```bash
 ssh root@177.7.37.78   # o usuario con acceso docker
 
@@ -52,7 +56,14 @@ https://habitacion.lionapp.cloud/habitacion?key=room-101-key
 
 ## Seed inicial (una vez)
 
-Ver tarea 4.x en `openspec/changes/deploy-hostinger-ghcr/tasks.md`.
+Con `BOOTSTRAP_ENABLED=true` en el stack:
+
+```bash
+curl -X POST https://habitacion.lionapp.cloud/api/seed \
+  -H "x-seed-secret: $JWT_SECRET"
+```
+
+Luego poner `BOOTSTRAP_ENABLED=false` y redeploy. **Completado en prod (2026-06-19).**
 
 ## Rollback
 

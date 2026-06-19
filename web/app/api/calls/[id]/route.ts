@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { getBearerToken, verifyToken } from "@/lib/auth";
 import { serializeCall } from "@/lib/calls";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
+import { clearSignalBuffer } from "@/lib/signal-buffer";
 import type { Call, CallStatus } from "@/lib/types";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -72,6 +73,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
     const updated: Call = { ...call, status, completedAt: new Date() };
     const serialized = serializeCall(updated);
+    clearSignalBuffer(call._id!.toString());
     publishCallEvent(
       call.floor,
       call.sector,

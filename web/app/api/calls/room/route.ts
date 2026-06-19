@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { ACTIVE_CALL_STATUSES, serializeCall } from "@/lib/calls";
 import { resolveRoomKey } from "@/lib/room-key";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
+import { clearSignalBuffer } from "@/lib/signal-buffer";
 import type { Call, Room } from "@/lib/types";
 
 async function resolveRoom(roomKey: string): Promise<Room | null> {
@@ -86,6 +87,7 @@ export async function PATCH(request: NextRequest) {
       completedAt: new Date(),
     };
     const serialized = serializeCall(updated);
+    clearSignalBuffer(call._id!.toString());
 
     publishCallEvent(
       call.floor,
