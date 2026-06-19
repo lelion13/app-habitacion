@@ -1,7 +1,8 @@
 change: video-ui-fixed-layout
-status: implemented
-phase: verify
+status: archived
+phase: complete
 created: 2026-06-19
+archived: 2026-06-19
 domains:
   - ui
   - calls

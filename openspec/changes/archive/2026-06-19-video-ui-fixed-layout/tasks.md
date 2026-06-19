@@ -24,16 +24,16 @@
 
 ## Fase 4 — Verificación
 
-- [ ] 4.1 Manual: tablet habitación + PC dashboard — sin deformación
-- [ ] 4.2 Manual: finalizar desde ambos lados
-- [ ] 4.3 Manual: prod `habitacion.lionapp.cloud` tras deploy
+- [x] 4.1 Manual: tablet habitación + PC dashboard — sin deformación
+- [x] 4.2 Manual: finalizar desde ambos lados
+- [x] 4.3 Manual: prod `habitacion.lionapp.cloud` tras deploy
 - [x] 4.4 `npm run build`
 - [x] 4.5 Completar `verify-report.md`
 
 ## Fase 5 — Cierre SDD
 
-- [ ] 5.1 Fusionar delta → `openspec/specs/ui/spec.md`
-- [ ] 5.2 Archivar en `openspec/changes/archive/YYYY-MM-DD-video-ui-fixed-layout/`
+- [x] 5.1 Fusionar delta → `openspec/specs/ui/spec.md`
+- [x] 5.2 Archivar en `openspec/changes/archive/2026-06-19-video-ui-fixed-layout/`
 
 ## Dependencias
 

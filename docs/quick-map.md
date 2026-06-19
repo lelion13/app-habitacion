@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC operativos.
+**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 operativos.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -45,11 +45,7 @@ Guía rápida para orientarse en el repo y en SDD.
 | [baseline-mvp](../openspec/changes/archive/2026-06-18-baseline-mvp/) | 2026-06-18 | MVP timbre + dashboard |
 | [deploy-hostinger-ghcr](../openspec/changes/archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik + `?key=` |
 | [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
-
-## Change activo
-
-**video-ui-fixed-layout** — marco 16:9 fijo, sin deformar, footer finalizar  
-→ [openspec/changes/video-ui-fixed-layout/](../openspec/changes/video-ui-fixed-layout/proposal.md)
+| [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar |
 
 ## Docs operativos
 

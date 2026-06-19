@@ -2,27 +2,27 @@
 
 **Change:** video-ui-fixed-layout  
 **Fecha:** 2026-06-19  
-**Entorno:** local (build + unit tests)
+**Entorno:** local + prod (`habitacion.lionapp.cloud`, commit `86f1ff0`)
 
 ## Layout visual
 
 | # | Caso | 375px | 768px | 1280px |
 |---|------|-------|-------|--------|
-| 1 | Marco 16:9 visible, centrado | ☐ | ☐ | ☐ |
-| 2 | Remoto sin deformación (4:3 vs 16:9) | ☐ | ☐ | ☐ |
-| 3 | PiP local visible, no tapa footer | ☐ | ☐ | ☐ |
-| 4 | Footer fijo siempre visible | ☐ | ☐ | ☐ |
-| 5 | Sin scroll vertical en pantalla video | ☐ | ☐ | ☐ |
+| 1 | Marco 16:9 visible, centrado | ✅ | ✅ | ✅ |
+| 2 | Remoto sin deformación (4:3 vs 16:9) | ✅ | ✅ | ✅ |
+| 3 | PiP local visible, no tapa footer | ✅ | ✅ | ✅ |
+| 4 | Footer fijo siempre visible | ✅ | ✅ | ✅ |
+| 5 | Sin scroll vertical en pantalla video | ✅ | ✅ | ✅ |
 
 ## Funcional
 
 | # | Caso | Dashboard | Habitación |
 |---|------|-----------|------------|
-| 1 | Finalizar desde footer | ☐ | ☐ |
-| 2 | WebRTC cleanup tras finalizar | ☐ | ☐ |
-| 3 | Vuelve a UI pre-llamada | ☐ | ☐ |
-| 4 | Finalizar en estado "Conectando…" | ☐ | ☐ |
-| 5 | Videollamada sigue conectando tras fix layout | ☐ | ☐ |
+| 1 | Finalizar desde footer | ✅ | ✅ |
+| 2 | WebRTC cleanup tras finalizar | ✅ | ✅ |
+| 3 | Vuelve a UI pre-llamada | ✅ | ✅ |
+| 4 | Finalizar en estado "Conectando…" | ✅ | ✅ |
+| 5 | Videollamada sigue conectando tras fix layout | ✅ | ✅ |
 
 ## Técnico
 
@@ -30,7 +30,7 @@
 |---|-------|-----------|
 | 1 | `npm run build` | ✅ OK |
 | 2 | `npm run test:unit` | ✅ 16/16 |
-| 3 | Sin regresión signaling WebRTC | ☐ manual |
+| 3 | Sin regresión signaling WebRTC | ✅ prod |
 
 ## Implementación
 
@@ -42,5 +42,6 @@
 
 ## Sign-off
 
-- [x] Criterios proposal cumplidos (código)
-- [ ] Listo para archivar (pendiente verificación manual + deploy prod)
+- [x] Criterios proposal cumplidos
+- [x] Verificación manual prod OK (usuario)
+- [x] Listo para archivar
