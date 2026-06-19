@@ -26,7 +26,7 @@ interface VideoCallSessionProps {
 }
 
 function signalKey(message: WebRtcSignalMessage): string {
-  return `${message.from}:${message.type}:${message.payload.slice(0, 48)}`;
+  return `${message.from}:${message.type}:${message.payload}`;
 }
 
 export function VideoCallSession({
@@ -47,11 +47,15 @@ export function VideoCallSession({
   const remoteDescSetRef = useRef(false);
   const processedSignalsRef = useRef(new Set<string>());
   const sessionActiveRef = useRef(false);
+  const autoStartedRef = useRef(false);
+  const handleSignalRef = useRef<(message: WebRtcSignalMessage) => Promise<void>>(
+    async () => {},
+  );
 
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [started, setStarted] = useState(autoStart);
+  const [started, setStarted] = useState(false);
 
   const cleanup = useCallback(() => {
     sessionActiveRef.current = false;
@@ -66,7 +70,7 @@ export function VideoCallSession({
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
   }, []);
 
-  useEffect(() => cleanup, [cleanup]);
+  useEffect(() => () => cleanup(), [cleanup]);
 
   const postSignal = useCallback(
     async (type: WebRtcSignalMessage["type"], payload: string) => {
@@ -109,36 +113,36 @@ export function VideoCallSession({
     pendingIceRef.current = [];
   }, []);
 
-  const addIceCandidate = useCallback(
-    async (payload: string) => {
-      const pc = pcRef.current;
-      if (!pc) return;
+  const addIceCandidate = useCallback(async (payload: string) => {
+    const pc = pcRef.current;
+    if (!pc) return;
 
-      let candidate: RTCIceCandidateInit;
-      try {
-        candidate = JSON.parse(payload) as RTCIceCandidateInit;
-      } catch {
-        return;
-      }
+    let candidate: RTCIceCandidateInit;
+    try {
+      candidate = JSON.parse(payload) as RTCIceCandidateInit;
+    } catch {
+      return;
+    }
 
-      if (!remoteDescSetRef.current) {
-        pendingIceRef.current.push(candidate);
-        return;
-      }
+    if (!remoteDescSetRef.current) {
+      pendingIceRef.current.push(candidate);
+      return;
+    }
 
-      try {
-        await pc.addIceCandidate(candidate);
-      } catch {
-        /* ignore */
-      }
-    },
-    [],
-  );
+    try {
+      await pc.addIceCandidate(candidate);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const handleRemoteStream = useCallback((stream: MediaStream) => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = stream;
-    }
+    const el = remoteVideoRef.current;
+    if (!el) return;
+    el.srcObject = stream;
+    void el.play().catch(() => {
+      /* autoplay policy */
+    });
     setConnectionState("connected");
   }, []);
 
@@ -151,11 +155,9 @@ export function VideoCallSession({
       if (processedSignalsRef.current.has(key)) return;
 
       if (message.type === "offer" && role === "staff") {
-        if (!sessionActiveRef.current) return;
+        if (!sessionActiveRef.current || !pcRef.current) return;
 
         const activePc = pcRef.current;
-        if (!activePc) return;
-
         await activePc.setRemoteDescription({
           type: "offer",
           sdp: message.payload,
@@ -171,10 +173,9 @@ export function VideoCallSession({
       }
 
       if (message.type === "answer" && role === "room") {
-        const activePc = pcRef.current;
-        if (!activePc) return;
+        if (!pcRef.current) return;
 
-        await activePc.setRemoteDescription({
+        await pcRef.current.setRemoteDescription({
           type: "answer",
           sdp: message.payload,
         });
@@ -193,6 +194,8 @@ export function VideoCallSession({
     [addIceCandidate, callId, flushPendingIce, postSignal, role],
   );
 
+  handleSignalRef.current = handleSignal;
+
   const fetchBufferedSignals = useCallback(async () => {
     const params = new URLSearchParams();
     if (role === "room" && roomKey) {
@@ -208,9 +211,9 @@ export function VideoCallSession({
 
     const data = (await res.json()) as { signals: WebRtcSignalMessage[] };
     for (const signal of data.signals) {
-      await handleSignal(signal);
+      await handleSignalRef.current(signal);
     }
-  }, [callId, handleSignal, role, roomKey, token]);
+  }, [callId, role, roomKey, token]);
 
   const ensurePeer = useCallback(() => {
     if (pcRef.current) return pcRef.current;
@@ -220,6 +223,16 @@ export function VideoCallSession({
       onIceCandidate: (candidate) => {
         void postSignal("ice", JSON.stringify(candidate));
       },
+      onConnectionStateChange: (state) => {
+        if (state === "connected") {
+          setConnectionState("connected");
+        } else if (state === "failed") {
+          setConnectionState("error");
+          setError(
+            "No se pudo establecer la conexión de video. Intente finalizar y volver a llamar.",
+          );
+        }
+      },
     });
 
     pcRef.current = pc;
@@ -227,6 +240,8 @@ export function VideoCallSession({
   }, [handleRemoteStream, postSignal]);
 
   const startSession = useCallback(async () => {
+    if (sessionActiveRef.current) return;
+
     setError(null);
     setConnectionState("connecting");
     setStarted(true);
@@ -261,7 +276,7 @@ export function VideoCallSession({
   }, [cleanup, ensurePeer, fetchBufferedSignals, postSignal, role]);
 
   useEffect(() => {
-    if (!started || !sessionActiveRef.current) return;
+    if (!started) return;
 
     let source: EventSource | null = null;
 
@@ -269,7 +284,7 @@ export function VideoCallSession({
       source = new EventSource(
         `/api/calls/room/stream?roomId=${encodeURIComponent(roomId)}`,
       );
-    } else if (role === "staff" && listenConfig && token) {
+     } else if (role === "staff" && listenConfig && token) {
       const params = new URLSearchParams({
         floor: listenConfig.floor,
         sector: listenConfig.sector,
@@ -283,7 +298,7 @@ export function VideoCallSession({
 
     const onSignal = (event: MessageEvent) => {
       const message = JSON.parse(event.data as string) as WebRtcSignalMessage;
-      void handleSignal(message);
+      void handleSignalRef.current(message);
     };
 
     source.addEventListener("webrtc:signal", onSignal);
@@ -292,12 +307,22 @@ export function VideoCallSession({
       source.removeEventListener("webrtc:signal", onSignal);
       source.close();
     };
-  }, [started, role, roomId, listenConfig, token, handleSignal]);
+  }, [started, role, roomId, listenConfig, token]);
 
   useEffect(() => {
-    if (autoStart) {
-      void startSession();
-    }
+    if (!started || connectionState === "connected") return;
+
+    const poll = window.setInterval(() => {
+      void fetchBufferedSignals();
+    }, 2000);
+
+    return () => window.clearInterval(poll);
+  }, [started, connectionState, fetchBufferedSignals]);
+
+  useEffect(() => {
+    if (!autoStart || autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    void startSession();
   }, [autoStart, startSession]);
 
   const statusLabel =

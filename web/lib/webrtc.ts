@@ -1,5 +1,6 @@
 export const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
 ];
 
 export async function acquireLocalMedia(): Promise<MediaStream> {
@@ -16,6 +17,7 @@ export function stopMediaStream(stream: MediaStream | null): void {
 export function createPeerConnection(handlers: {
   onRemoteStream: (stream: MediaStream) => void;
   onIceCandidate: (candidate: RTCIceCandidateInit) => void;
+  onConnectionStateChange?: (state: RTCPeerConnectionState) => void;
 }): RTCPeerConnection {
   const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
@@ -28,6 +30,10 @@ export function createPeerConnection(handlers: {
     if (event.candidate) {
       handlers.onIceCandidate(event.candidate.toJSON());
     }
+  };
+
+  pc.onconnectionstatechange = () => {
+    handlers.onConnectionStateChange?.(pc.connectionState);
   };
 
   return pc;
