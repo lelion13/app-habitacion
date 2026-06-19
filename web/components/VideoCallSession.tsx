@@ -38,6 +38,7 @@ export function VideoCallSession({
   roomId,
   fullscreen = false,
   autoStart = false,
+  onEnded,
 }: VideoCallSessionProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -56,6 +57,7 @@ export function VideoCallSession({
     useState<ConnectionState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
+  const [ending, setEnding] = useState(false);
 
   const cleanup = useCallback(() => {
     sessionActiveRef.current = false;
@@ -275,6 +277,47 @@ export function VideoCallSession({
     }
   }, [cleanup, ensurePeer, fetchBufferedSignals, postSignal, role]);
 
+  const endCall = useCallback(async () => {
+    if (ending) return;
+    setEnding(true);
+    setError(null);
+
+    try {
+      if (role === "staff") {
+        if (!token) throw new Error("missing token");
+        const res = await fetch(`/api/calls/${callId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: "complete" }),
+        });
+        if (!res.ok) throw new Error("complete failed");
+      } else if (role === "room") {
+        if (!roomKey) throw new Error("missing roomKey");
+        const res = await fetch(
+          `/api/calls/room?key=${encodeURIComponent(roomKey)}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "cancel", roomKey }),
+          },
+        );
+        if (!res.ok) throw new Error("cancel failed");
+      }
+
+      cleanup();
+      setStarted(false);
+      setConnectionState("idle");
+      onEnded?.();
+    } catch {
+      setError("No se pudo finalizar la llamada. Intente de nuevo.");
+    } finally {
+      setEnding(false);
+    }
+  }, [callId, cleanup, ending, onEnded, role, roomKey, token]);
+
   useEffect(() => {
     if (!started) return;
 
@@ -334,50 +377,89 @@ export function VideoCallSession({
           ? (error ?? "Error de conexión")
           : "Listo para iniciar";
 
-  const containerClass = fullscreen
-    ? "fixed inset-0 z-50 flex flex-col bg-slate-950 px-4 py-6"
-    : "flex flex-col";
+  const shellClass = fullscreen
+    ? "fixed inset-0 z-50 flex flex-col bg-slate-950 text-white"
+    : "flex min-h-dvh flex-col bg-slate-950 text-white";
 
   return (
-    <div className={containerClass}>
-      {!started && role === "room" && (
-        <button
-          type="button"
-          onClick={() => void startSession()}
-          className="mb-4 rounded-xl bg-violet-600 px-6 py-4 text-lg font-semibold text-white hover:bg-violet-700"
-        >
-          Iniciar videollamada
-        </button>
+    <div className={shellClass} style={fullscreen ? { height: "100dvh" } : undefined}>
+      {!started && role === "room" && !error && (
+        <div className="flex flex-1 flex-col items-center justify-center px-4">
+          <button
+            type="button"
+            onClick={() => void startSession()}
+            className="rounded-xl bg-violet-600 px-6 py-4 text-lg font-semibold text-white hover:bg-violet-700"
+          >
+            Iniciar videollamada
+          </button>
+        </div>
       )}
 
-      {error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
-      )}
-
-      {started && (
-        <div className="relative flex-1">
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="h-full min-h-[240px] w-full rounded-2xl bg-slate-900 object-cover"
-          />
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="absolute bottom-4 right-4 h-28 w-40 rounded-xl border-2 border-white/30 bg-slate-800 object-cover shadow-lg sm:h-36 sm:w-48"
-          />
+      {!started && error && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4">
+          <p className="text-center text-sm text-red-300">{error}</p>
+          {role === "staff" && onEnded && (
+            <button
+              type="button"
+              onClick={() => onEnded()}
+              className="rounded-xl bg-slate-700 px-6 py-3 font-semibold text-white hover:bg-slate-600"
+            >
+              Volver al dashboard
+            </button>
+          )}
+          {role === "room" && (
+            <button
+              type="button"
+              onClick={() => void startSession()}
+              className="rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-700"
+            >
+              Reintentar
+            </button>
+          )}
         </div>
       )}
 
       {started && (
-        <p className="mt-4 text-center text-sm text-slate-300 sm:text-slate-600">
-          {statusLabel}
-        </p>
+        <>
+          <header className="shrink-0 border-b border-slate-800 px-4 py-2 text-center text-sm text-slate-300">
+            {statusLabel}
+          </header>
+
+          {error && (
+            <p className="shrink-0 bg-red-950 px-4 py-2 text-center text-sm text-red-300">
+              {error}
+            </p>
+          )}
+
+          <div className="flex min-h-0 flex-1 items-center justify-center px-3 py-2">
+            <div className="relative aspect-video w-full max-w-5xl max-h-[calc(100dvh-9rem)]">
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="absolute inset-0 h-full w-full rounded-lg bg-black object-contain"
+              />
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className="absolute bottom-3 right-3 h-24 w-32 rounded-lg border-2 border-white/30 bg-slate-800 object-cover shadow-lg sm:h-28 sm:w-40"
+              />
+            </div>
+          </div>
+
+          <footer className="shrink-0 border-t border-slate-800 bg-slate-950 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <button
+              type="button"
+              onClick={() => void endCall()}
+              disabled={ending}
+              className="min-h-12 w-full rounded-xl bg-red-600 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {ending ? "Finalizando…" : "Finalizar llamada"}
+            </button>
+          </footer>
+        </>
       )}
     </div>
   );

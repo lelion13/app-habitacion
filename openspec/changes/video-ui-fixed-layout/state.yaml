@@ -1,0 +1,10 @@
+change: video-ui-fixed-layout
+status: implemented
+phase: verify
+created: 2026-06-19
+domains:
+  - ui
+  - calls
+requirement: |
+  Marco de video fijo 16:9 (object-fit contain, sin deformar), PiP local,
+  barra inferior fija con botones para finalizar — dashboard y habitación.

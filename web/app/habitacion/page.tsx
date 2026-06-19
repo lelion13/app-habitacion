@@ -174,6 +174,7 @@ function HabitacionContent() {
           roomKey={roomKey}
           roomId={room.id}
           fullscreen
+          onEnded={() => setActiveCall(null)}
         />
       )}
 

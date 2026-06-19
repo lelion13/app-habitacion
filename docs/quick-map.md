@@ -46,6 +46,11 @@ Guía rápida para orientarse en el repo y en SDD.
 | [deploy-hostinger-ghcr](../openspec/changes/archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik + `?key=` |
 | [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
 
+## Change activo
+
+**video-ui-fixed-layout** — marco 16:9 fijo, sin deformar, footer finalizar  
+→ [openspec/changes/video-ui-fixed-layout/](../openspec/changes/video-ui-fixed-layout/proposal.md)
+
 ## Docs operativos
 
 | Doc | Contenido |
