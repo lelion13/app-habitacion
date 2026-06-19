@@ -1,6 +1,24 @@
 # Cambios SDD
 
-No hay changes activos. Comportamiento actual en [openspec/specs/](../specs/).
+## Activos
+
+### call-alerts-and-history
+
+Alerta sonora persistente (timbre + video) hasta atención; historial de llamadas con métricas en Mongo.
+
+| Artefacto | Ruta |
+|-----------|------|
+| Propuesta | [proposal.md](./call-alerts-and-history/proposal.md) |
+| Diseño | [design.md](./call-alerts-and-history/design.md) |
+| Tareas | [tasks.md](./call-alerts-and-history/tasks.md) |
+| Delta calls | [specs/calls/spec.md](./call-alerts-and-history/specs/calls/spec.md) |
+| Delta ui | [specs/ui/spec.md](./call-alerts-and-history/specs/ui/spec.md) |
+| Delta realtime | [specs/realtime/spec.md](./call-alerts-and-history/specs/realtime/spec.md) |
+| Verify | [verify-report.md](./call-alerts-and-history/verify-report.md) |
+
+Estado: **implementado** — pendiente verificación manual y deploy.
+
+---
 
 ## Archivados
 

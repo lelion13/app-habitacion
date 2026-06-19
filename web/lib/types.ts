@@ -44,6 +44,9 @@ export interface Call {
   acceptedBy?: ObjectId;
   acceptedAt?: Date;
   completedAt?: Date;
+  responseTimeMs?: number;
+  totalDurationMs?: number;
+  sessionDurationMs?: number;
   signalData?: {
     offer?: string;
     answer?: string;

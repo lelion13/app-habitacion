@@ -1,16 +1,23 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
-import { playBell, unlockBellAudio } from "@/lib/bell";
+import {
+  playBell,
+  stopAlertLoop,
+  syncAlertLoop,
+  unlockBellAudio,
+} from "@/lib/bell";
+import { matchesListenTarget, resolveAlertKind } from "@/lib/calls";
 import {
   ROLE_LABELS,
   CALL_TYPE_LABELS,
   type StaffRole,
   type CallType,
+  type CallStatus,
 } from "@/lib/types";
 
 interface SerializedCall {
@@ -33,16 +40,26 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
-  const knownCallIds = useRef(new Set<string>());
+  const [audioReady, setAudioReady] = useState(false);
 
-  function notifyIfNewBell(call: SerializedCall) {
-    if (call.type !== "bell" || call.status !== "pending") return;
-    if (knownCallIds.current.has(call.id)) return;
-    knownCallIds.current.add(call.id);
-    void playBell();
-  }
+  const pendingForListen = useMemo(() => {
+    if (!listenConfig) return [];
+    return calls.filter((call) =>
+      matchesListenTarget(
+        {
+          floor: call.floor,
+          sector: call.sector,
+          targetRole: call.targetRole,
+          status: call.status as CallStatus,
+        },
+        listenConfig.floor,
+        listenConfig.sector,
+        listenConfig.role,
+      ),
+    );
+  }, [calls, listenConfig]);
 
-  const loadCalls = useCallback(async (notifyNew = false) => {
+  const loadCalls = useCallback(async () => {
     if (!token || !listenConfig) return;
     const params = new URLSearchParams({
       floor: listenConfig.floor,
@@ -54,13 +71,6 @@ export default function DashboardPage() {
     });
     if (!res.ok) return;
     const data = (await res.json()) as { calls: SerializedCall[] };
-    if (notifyNew) {
-      for (const call of data.calls) {
-        notifyIfNewBell(call);
-      }
-    } else {
-      knownCallIds.current = new Set(data.calls.map((call) => call.id));
-    }
     setCalls(data.calls);
   }, [token, listenConfig]);
 
@@ -69,8 +79,7 @@ export default function DashboardPage() {
       setFloor(listenConfig.floor);
       setSector(listenConfig.sector);
       setRole(listenConfig.role);
-      knownCallIds.current.clear();
-      void loadCalls(false);
+      void loadCalls();
     }
   }, [listenConfig, loadCalls]);
 
@@ -78,7 +87,7 @@ export default function DashboardPage() {
     if (!token || !listenConfig) return;
 
     const poll = window.setInterval(() => {
-      void loadCalls(true);
+      void loadCalls();
     }, 4000);
 
     return () => window.clearInterval(poll);
@@ -102,7 +111,6 @@ export default function DashboardPage() {
     source.addEventListener("call:new", (event) => {
       const call = JSON.parse(event.data) as SerializedCall;
       setCalls((prev) => [call, ...prev.filter((c) => c.id !== call.id)]);
-      notifyIfNewBell(call);
     });
 
     source.addEventListener("call:updated", (event) => {
@@ -120,15 +128,30 @@ export default function DashboardPage() {
     };
   }, [token, listenConfig]);
 
+  useEffect(() => {
+    if (!audioReady || pendingForListen.length === 0) {
+      syncAlertLoop(null);
+      return;
+    }
+    syncAlertLoop(resolveAlertKind(pendingForListen));
+    return () => stopAlertLoop();
+  }, [audioReady, pendingForListen]);
+
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
     await unlockBellAudio();
+    setAudioReady(true);
     const err = await saveListenConfig({ floor, sector, role });
     if (err) setError(err);
-    else knownCallIds.current.clear();
     setSaving(false);
+  }
+
+  async function handleTestBell() {
+    await unlockBellAudio();
+    setAudioReady(true);
+    await playBell();
   }
 
   async function updateCall(id: string, action: string) {
@@ -156,6 +179,7 @@ export default function DashboardPage() {
   }
 
   const roles: StaffRole[] = ["nurse", "quality", "doctor"];
+  const alertKind = resolveAlertKind(pendingForListen);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -167,6 +191,20 @@ export default function DashboardPage() {
             : "Configure dónde escuchar"
         }
       />
+
+      {!audioReady && pendingForListen.length > 0 && (
+        <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Hay llamados pendientes. Use <strong>Probar timbre</strong> o{" "}
+          <strong>Activar escucha</strong> para habilitar la alerta sonora.
+        </p>
+      )}
+
+      {audioReady && alertKind && (
+        <p className="mb-4 rounded-lg bg-teal-50 px-4 py-3 text-sm text-teal-900">
+          Alerta activa —{" "}
+          {alertKind === "video" ? "videollamada" : "timbre"} pendiente
+        </p>
+      )}
 
       <form
         onSubmit={handleSave}
@@ -207,7 +245,7 @@ export default function DashboardPage() {
         <div className="flex items-end gap-2">
           <button
             type="button"
-            onClick={() => void unlockBellAudio().then(playBell)}
+            onClick={() => void handleTestBell()}
             className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             Probar timbre
@@ -227,6 +265,15 @@ export default function DashboardPage() {
           {error}
         </p>
       )}
+
+      <p className="mb-6">
+        <Link
+          href="/estadisticas"
+          className="text-sm font-medium text-teal-700 hover:text-teal-900 hover:underline"
+        >
+          Ver estadísticas e historial →
+        </Link>
+      </p>
 
       {!listenConfig ? (
         <p className="text-slate-600">

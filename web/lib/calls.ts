@@ -21,7 +21,7 @@ export function matchesListenTarget(
 }
 
 export function serializeCall(call: Call) {
-  return {
+  const base = {
     id: call._id?.toString() ?? "",
     roomId: call.roomId.toString(),
     roomNumber: call.roomNumber,
@@ -35,6 +35,28 @@ export function serializeCall(call: Call) {
     acceptedAt: call.acceptedAt?.toISOString(),
     completedAt: call.completedAt?.toISOString(),
   };
+  return {
+    ...base,
+    ...(call.responseTimeMs != null && {
+      responseTimeMs: call.responseTimeMs,
+    }),
+    ...(call.totalDurationMs != null && {
+      totalDurationMs: call.totalDurationMs,
+    }),
+    ...(call.sessionDurationMs != null && {
+      sessionDurationMs: call.sessionDurationMs,
+    }),
+  };
+}
+
+export type AlertKind = "bell" | "video";
+
+export function resolveAlertKind(
+  pendingCalls: Pick<Call, "type">[],
+): AlertKind | null {
+  if (pendingCalls.some((c) => c.type === "video")) return "video";
+  if (pendingCalls.some((c) => c.type === "bell")) return "bell";
+  return null;
 }
 
 export function isTerminalStatus(status: CallStatus): boolean {

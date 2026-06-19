@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { matchesListenTarget, isTerminalStatus, isActiveCallStatus } from "../calls";
+import { matchesListenTarget, isTerminalStatus, isActiveCallStatus, resolveAlertKind } from "../calls";
 import { ObjectId } from "mongodb";
 
 describe("calls", () => {
@@ -28,5 +28,16 @@ describe("calls", () => {
     expect(isActiveCallStatus("pending")).toBe(true);
     expect(isActiveCallStatus("accepted")).toBe(true);
     expect(isActiveCallStatus("completed")).toBe(false);
+  });
+
+  it("resolves alert kind with video priority", () => {
+    expect(resolveAlertKind([{ type: "bell" }])).toBe("bell");
+    expect(
+      resolveAlertKind([
+        { type: "bell" },
+        { type: "video" },
+      ]),
+    ).toBe("video");
+    expect(resolveAlertKind([])).toBeNull();
   });
 });

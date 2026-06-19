@@ -47,6 +47,11 @@ Guía rápida para orientarse en el repo y en SDD.
 | [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
 | [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar |
 
+## Change activo
+
+**call-alerts-and-history** — alerta persistente + historial/métricas en Mongo  
+→ [openspec/changes/call-alerts-and-history/](../openspec/changes/call-alerts-and-history/proposal.md)
+
 ## Docs operativos
 
 | Doc | Contenido |

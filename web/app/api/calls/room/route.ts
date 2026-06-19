@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { ACTIVE_CALL_STATUSES, serializeCall } from "@/lib/calls";
+import { metricsOnTerminal } from "@/lib/call-metrics";
 import { resolveRoomKey } from "@/lib/room-key";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
 import { clearSignalBuffer } from "@/lib/signal-buffer";
@@ -76,15 +77,25 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ call: null });
     }
 
+    const completedAt = new Date();
+    const terminalMetrics = metricsOnTerminal(call, completedAt);
+
     await db.collection<Call>("calls").updateOne(
       { _id: call._id },
-      { $set: { status: "cancelled", completedAt: new Date() } },
+      {
+        $set: {
+          status: "cancelled",
+          completedAt,
+          ...terminalMetrics,
+        },
+      },
     );
 
     const updated: Call = {
       ...call,
       status: "cancelled",
-      completedAt: new Date(),
+      completedAt,
+      ...terminalMetrics,
     };
     const serialized = serializeCall(updated);
     clearSignalBuffer(call._id!.toString());

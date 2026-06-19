@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/db";
 import { getBearerToken, verifyToken } from "@/lib/auth";
 import { serializeCall } from "@/lib/calls";
+import { metricsOnAccept, metricsOnTerminal } from "@/lib/call-metrics";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
 import { clearSignalBuffer } from "@/lib/signal-buffer";
 import type { Call, CallStatus } from "@/lib/types";
@@ -34,13 +35,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (action === "accept" && call.status === "pending") {
+    const acceptedAt = new Date();
+    const acceptMetrics = metricsOnAccept(call, acceptedAt);
     await db.collection<Call>("calls").updateOne(
       { _id: call._id },
       {
         $set: {
           status: "accepted",
           acceptedBy: new ObjectId(payload.sub),
-          acceptedAt: new Date(),
+          acceptedAt,
+          ...acceptMetrics,
         },
       },
     );
@@ -48,7 +52,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       ...call,
       status: "accepted",
       acceptedBy: new ObjectId(payload.sub),
-      acceptedAt: new Date(),
+      acceptedAt,
+      ...acceptMetrics,
     };
     const serialized = serializeCall(updated);
     publishCallEvent(
@@ -67,11 +72,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     (call.status === "pending" || call.status === "accepted")
   ) {
     const status: CallStatus = action === "complete" ? "completed" : "cancelled";
+    const completedAt = new Date();
+    const terminalMetrics = metricsOnTerminal(call, completedAt);
     await db.collection<Call>("calls").updateOne(
       { _id: call._id },
-      { $set: { status, completedAt: new Date() } },
+      { $set: { status, completedAt, ...terminalMetrics } },
     );
-    const updated: Call = { ...call, status, completedAt: new Date() };
+    const updated: Call = {
+      ...call,
+      status,
+      completedAt,
+      ...terminalMetrics,
+    };
     const serialized = serializeCall(updated);
     clearSignalBuffer(call._id!.toString());
     publishCallEvent(

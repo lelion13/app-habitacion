@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 
-export default function DashboardLayout({
+export default function EstadisticasLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -13,17 +13,12 @@ export default function DashboardLayout({
   const { user, loading, logout } = useApp();
   const router = useRouter();
   const pathname = usePathname();
-  const isLogin = pathname === "/dashboard/login";
 
   useEffect(() => {
-    if (!loading && !user && !isLogin) {
+    if (!loading && !user) {
       router.replace("/dashboard/login");
     }
-  }, [loading, user, isLogin, router]);
-
-  if (isLogin) {
-    return <>{children}</>;
-  }
+  }, [loading, user, router]);
 
   if (loading || !user) {
     return (
@@ -36,20 +31,20 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-slate-50">
       <nav className="border-b border-slate-200 bg-white px-4 py-3">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <span className="font-semibold text-slate-900">
-              Dashboard · {user.name}
+              Estadísticas · {user.name}
             </span>
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-teal-800 underline"
+              className={`text-sm font-medium ${pathname === "/dashboard" ? "text-teal-800" : "text-teal-700 hover:text-teal-900"}`}
             >
-              Escucha
+              Dashboard
             </Link>
             <Link
               href="/estadisticas"
-              className="text-sm font-medium text-teal-700 hover:text-teal-900"
+              className={`text-sm font-medium ${pathname === "/estadisticas" ? "text-teal-800 underline" : "text-teal-700 hover:text-teal-900"}`}
             >
               Estadísticas
             </Link>
