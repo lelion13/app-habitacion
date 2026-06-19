@@ -50,9 +50,24 @@ https://habitacion.lionapp.cloud/habitacion?key=room-101-key
 
 ## Actualizar versión
 
-1. Merge a `main` → GitHub Actions publica nuevo SHA tag
-2. En VPS, editar `.env.prod`: `IMAGE_TAG=sha-abc1234`
-3. `docker compose --env-file .env.prod -f docker-compose.prod.yml pull && up -d`
+1. Merge/push a `main` → GitHub Actions publica imagen GHCR (~1–2 min)
+2. Hostinger MCP `VPS_updateProject` en proyecto `app-habitacion`, o en VPS:
+   ```bash
+   cd /docker/app-habitacion
+   docker compose pull && docker compose up -d
+   ```
+
+Commits recientes en prod: `4838066` (deploy), `ebf4e57` (WebRTC), `32d5a69` (fix signaling).
+
+## Videollamada (verificación manual)
+
+1. Dashboard login → Activar escucha (piso 1, sector A, enfermería)
+2. Habitación: `?key=room-101-key` → Video
+3. Dashboard: Atender → Abrir video
+4. Habitación: Iniciar videollamada
+5. Confirmar "Videollamada conectada" y video remoto
+
+Ver [runbook.md](./runbook.md) troubleshooting si queda en "Conectando…".
 
 ## Seed inicial (una vez)
 
@@ -87,4 +102,5 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml exec mongodb \
 | 404 Traefik | Verificar labels y `docker ps`; Traefik debe ver contenedor |
 | Cert no emitido | DNS propagado; puerto 80 accesible para HTTP challenge |
 | SSE no llega | Confirmar flush label; una sola réplica web |
+| Video "Conectando…" sin remoto | Hard refresh; verificar imagen ≥ `32d5a69`; posible NAT sin TURN |
 | 502 web | `docker logs app-habitacion-web`; revisar Mongo healthy |

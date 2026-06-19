@@ -36,15 +36,27 @@ Claves habitación demo: `room-101-key`, `room-102-key`, `room-201-key`
 | Ruta | Descripción |
 |------|-------------|
 | `/` | Landing |
-| `/habitacion` | PWA habitación (config: `NEXT_PUBLIC_ROOM_KEY`) |
+| `/habitacion?key={roomKey}` | PWA habitación (prod: una URL por tablet) |
 | `/dashboard/login` | Login personal |
 | `/dashboard` | Escucha y atención de llamados |
+| `/dashboard/video/[callId]` | Videollamada staff (WebRTC) |
+
+## Producción
+
+**URL:** https://habitacion.lionapp.cloud
+
+Tablets (ejemplo habitación 101):
+```
+https://habitacion.lionapp.cloud/habitacion?key=room-101-key
+```
+
+Deploy: ver [docs/deploy-hostinger.md](./docs/deploy-hostinger.md).
 
 ## PWA Android
 
-1. Abrir `/habitacion` en Chrome Android
+1. Abrir URL con `?key=room-XXX` en Chrome Android
 2. Menú → “Instalar aplicación” / “Añadir a pantalla de inicio”
-3. Configurar `NEXT_PUBLIC_ROOM_KEY` en el build o entorno del dispositivo
+3. Una URL fija por tablet (sin rebuild por habitación)
 
 ## Tests
 
@@ -60,10 +72,10 @@ npm run build
 | Doc | Descripción |
 |-----|-------------|
 | [docs/quick-map.md](./docs/quick-map.md) | Mapa del repo y flujo SDD |
-| [docs/architecture.md](./docs/architecture.md) | Diagramas y ADRs |
-| [docs/runbook.md](./docs/runbook.md) | Operación local y troubleshooting |
+| [docs/architecture.md](./docs/architecture.md) | Diagramas, WebRTC, ADRs |
+| [docs/runbook.md](./docs/runbook.md) | Operación local/prod y troubleshooting |
 | [docs/deploy-hostinger.md](./docs/deploy-hostinger.md) | Deploy prod Hostinger + GHCR |
-| [openspec/changes/deploy-hostinger-ghcr/](./openspec/changes/deploy-hostinger-ghcr/) | **Change activo** — deploy prod |
 | [openspec/specs/](./openspec/specs/) | **Fuente de verdad** — comportamiento actual |
+| [openspec/changes/archive/](./openspec/changes/archive/) | Historial de changes SDD |
 | [MICRO-PROMPT.md](./MICRO-PROMPT.md) | Origen microprompt |
 | [proyecto.md](./proyecto.md) | Requerimiento inicial |

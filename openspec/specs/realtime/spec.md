@@ -37,15 +37,33 @@ data: {json}
 ### REQ-RT-004: Resiliencia dashboard
 The dashboard SHOULD poll `/api/calls` every 4 seconds as fallback when in-memory SSE bus is reset (dev hot reload).
 
+### REQ-RT-005: Evento webrtc:signal
+The SSE bus MUST emit `webrtc:signal` to relay WebRTC signaling payloads.
+
+#### Scenario: Relay a staff
+- **GIVEN** staff subscribed on channel `{floor}:{sector}:{role}` matching the call
+- **WHEN** room POSTs a signal for that call
+- **THEN** event `webrtc:signal` SHALL be emitted on the staff channel
+
+#### Scenario: Relay a room
+- **GIVEN** room client subscribed on `room:{roomId}`
+- **WHEN** staff POSTs a signal for that call
+- **THEN** event `webrtc:signal` SHALL be emitted on the room channel
+
+### REQ-RT-006: Orden y recovery
+Signaling events SHOULD be processed in arrival order. Clients MUST poll GET `/api/calls/{id}/signal` every 2s until connected as fallback.
+
 ## Limitations (documented)
 
-| Limitation | Impact | Future change |
-|------------|--------|---------------|
-| In-memory subscriber map | Single Node process only | Redis pub/sub change |
-| No reconnect backoff spec | Client must reload on disconnect | Client retry policy |
-| Token in SSE query string | Visible in logs/proxies | Cookie-based SSE or WS |
+| Limitation | Impact | Mitigation |
+|------------|--------|------------|
+| In-memory subscriber map | Single Node process only | Poll signaling buffer; future Redis |
+| In-memory signal buffer | Lost on container restart mid-call | Re-negotiate; future persistence |
+| Token in SSE query string | Visible in logs/proxies | Cookie-based SSE (backlog) |
+| Traefik SSE | Requires flush interval 1s | Configured in prod compose |
 
-## Out of scope (MVP)
+## Out of scope
 
 - Guaranteed delivery / persistence of events
 - Cross-region replication
+- WebSocket upgrade

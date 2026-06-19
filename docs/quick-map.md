@@ -2,6 +2,8 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
+**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC operativos.
+
 ## Documentación SDD (fuente de verdad)
 
 | Qué | Dónde |
@@ -10,48 +12,59 @@ Guía rápida para orientarse en el repo y en SDD.
 | Comportamiento actual (specs) | [openspec/specs/](../openspec/specs/) |
 | Cambios activos | [openspec/changes/](../openspec/changes/) |
 | Cambios completados | [openspec/changes/archive/](../openspec/changes/archive/) |
-| Diseño baseline MVP | [openspec/changes/archive/2026-06-18-baseline-mvp/design.md](../openspec/changes/archive/2026-06-18-baseline-mvp/design.md) |
 
 ## Código
 
 | Área | Ruta |
 |------|------|
 | App Next.js | `web/` |
-| Páginas habitación | `web/app/habitacion/` |
-| Páginas dashboard | `web/app/dashboard/` |
+| PWA habitación | `web/app/habitacion/` |
+| Dashboard | `web/app/dashboard/` |
+| Videollamada staff | `web/app/dashboard/video/[callId]/` |
 | API | `web/app/api/` |
+| Signaling WebRTC | `web/app/api/calls/[id]/signal/` |
 | Lógica compartida | `web/lib/` |
+| VideoCallSession | `web/components/VideoCallSession.tsx` |
 | Estado global | `web/context/AppContext.tsx` |
-| Componentes UI | `web/components/` |
 
 ## Dominios de spec
 
 | Dominio | Archivo | Responsabilidad |
 |---------|---------|-----------------|
-| auth | `openspec/specs/auth/spec.md` | Login staff, JWT, sesiones de escucha |
-| rooms | `openspec/specs/rooms/spec.md` | Habitaciones, roomKey, seed |
-| calls | `openspec/specs/calls/spec.md` | Ciclo de vida de llamados |
-| realtime | `openspec/specs/realtime/spec.md` | SSE staff y habitación |
-| ui | `openspec/specs/ui/spec.md` | Pantallas, PWA, timbre, UX |
+| auth | `openspec/specs/auth/spec.md` | Login staff, JWT, sesiones |
+| rooms | `openspec/specs/rooms/spec.md` | Habitaciones, `?key=`, seed |
+| calls | `openspec/specs/calls/spec.md` | Llamados + signaling WebRTC |
+| realtime | `openspec/specs/realtime/spec.md` | SSE + `webrtc:signal` |
+| ui | `openspec/specs/ui/spec.md` | Pantallas, PWA, video, UX |
+| deploy | `openspec/specs/deploy/spec.md` | Prod Hostinger, GHCR, Traefik |
 
-## Cambio activo
+## Changes archivados (historial)
 
-**deploy-hostinger-ghcr** — prod en `habitacion.lionapp.cloud`  
-→ [openspec/changes/deploy-hostinger-ghcr/](../openspec/changes/deploy-hostinger-ghcr/proposal.md)
+| Change | Fecha | Resumen |
+|--------|-------|---------|
+| [baseline-mvp](../openspec/changes/archive/2026-06-18-baseline-mvp/) | 2026-06-18 | MVP timbre + dashboard |
+| [deploy-hostinger-ghcr](../openspec/changes/archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik + `?key=` |
+| [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
+
+## Docs operativos
+
+| Doc | Contenido |
+|-----|-----------|
+| [architecture.md](./architecture.md) | Diagramas, ADRs, WebRTC |
+| [runbook.md](./runbook.md) | Local, prod, troubleshooting |
+| [deploy-hostinger.md](./deploy-hostinger.md) | VPS, GHCR, seed, rollback |
 
 ## Flujo SDD para un cambio nuevo
 
-1. **Explorar** — `openspec/changes/{nombre}/exploration.md` (opcional)
-2. **Proponer** — `proposal.md` (alcance, riesgos, rollback)
-3. **Especificar** — `specs/{dominio}/spec.md` (delta ADDED/MODIFIED/REMOVED)
-4. **Diseñar** — `design.md` (si hay decisiones técnicas)
-5. **Tareas** — `tasks.md`
-6. **Implementar** — código + marcar tareas
-7. **Verificar** — `verify-report.md` + tests/build
-8. **Archivar** — mover a `archive/YYYY-MM-DD-{nombre}/` y fusionar specs
+1. **Proponer** — `openspec/changes/{nombre}/proposal.md`
+2. **Especificar** — deltas en `specs/{dominio}/spec.md`
+3. **Diseñar** — `design.md` (si aplica)
+4. **Tareas** — `tasks.md`
+5. **Implementar** — código
+6. **Verificar** — `verify-report.md` + tests
+7. **Archivar** — mover a `archive/YYYY-MM-DD-{nombre}/` y fusionar specs
 
 ## Origen del producto
 
-- Requerimiento inicial: [proyecto.md](../proyecto.md)
-- Prompt microprompt: [MICRO-PROMPT.md](../MICRO-PROMPT.md)
-- Operación local: [runbook.md](./runbook.md)
+- [proyecto.md](../proyecto.md) — requerimiento inicial
+- [MICRO-PROMPT.md](../MICRO-PROMPT.md) — stack microprompt

@@ -30,6 +30,22 @@ Staff with valid JWT MUST be able to accept pending calls.
 - **WHEN** PATCH `/api/calls/{id}` with `{ action: "accept" }`
 - **THEN** status SHALL become `accepted` with `acceptedBy` and `acceptedAt`
 
+#### Scenario: Aceptar video habilita signaling
+- **GIVEN** a pending call with `type: "video"`
+- **WHEN** PATCH `/api/calls/{id}` with `{ action: "accept" }`
+- **THEN** status SHALL become `accepted`
+- **AND** POST `/api/calls/{id}/signal` SHALL be permitted for room and staff until terminal status
+
+#### Scenario: Signaling rechazado si no es video
+- **GIVEN** an accepted call with `type: "bell"`
+- **WHEN** POST `/api/calls/{id}/signal`
+- **THEN** the response MUST be 400
+
+#### Scenario: Signaling rechazado si no accepted
+- **GIVEN** a call in status `pending`
+- **WHEN** POST `/api/calls/{id}/signal`
+- **THEN** the response MUST be 409
+
 ### REQ-CALL-004: Finalizar o cancelar (staff)
 Staff MUST be able to complete or cancel calls in `pending` or `accepted`.
 
@@ -55,13 +71,39 @@ GET `/api/calls?floor&sector&role` with JWT MUST return active calls (`pending`,
 ### REQ-CALL-008: Modelo de datos
 Each call MUST store denormalized `roomNumber`, `floor`, `sector` for query performance and display.
 
+### REQ-CALL-009: Señalización WebRTC
+The system MUST relay WebRTC signaling messages between room and staff for an accepted video call.
+
+#### Scenario: Room envía offer
+- **GIVEN** accepted video call for room R
+- **WHEN** POST `/api/calls/{id}/signal` with `{ from: "room", type: "offer", payload }` and valid roomKey
+- **THEN** staff subscribed to the call's floor/sector/targetRole SHALL receive SSE `webrtc:signal`
+
+#### Scenario: Staff envía answer
+- **GIVEN** accepted video call
+- **WHEN** POST with JWT and `{ from: "staff", type: "answer", payload }`
+- **THEN** room subscribed to `room:{roomId}` SHALL receive SSE `webrtc:signal`
+
+#### Scenario: ICE candidate
+- **WHEN** either party POST `{ type: "ice", payload }`
+- **THEN** the opposite party SHALL receive the event via SSE or buffered GET
+
+### REQ-CALL-010: Autorización signaling
+
+| `from` | Auth required |
+|--------|---------------|
+| `room` | Valid `roomKey` matching the call's room |
+| `staff` | Valid JWT |
+
+Unauthorized attempts MUST return 401.
+
 ## Target roles
 
 Same as auth listen roles: `nurse`, `quality`, `doctor`.
 
-## Out of scope (MVP)
+## Out of scope
 
 - Cola de prioridad entre habitaciones
 - Reasignación de llamado a otro rol
 - Historial / auditoría prolongada
-- WebRTC signaling completo (see UI spec)
+- TURN server (NAT estricto — ver backlog)
