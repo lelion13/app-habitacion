@@ -7,10 +7,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
 import {
   playBell,
+  playVideoAlert,
   stopAlertLoop,
   syncAlertLoop,
-  unlockBellAudio,
 } from "@/lib/bell";
+import { enableAlertAudio, wasAudioUnlockedThisSession } from "@/lib/audio-alert-session";
 import { matchesListenTarget, resolveAlertKind } from "@/lib/calls";
 import {
   ROLE_LABELS,
@@ -137,24 +138,45 @@ export default function DashboardPage() {
     return () => stopAlertLoop();
   }, [audioReady, pendingForListen]);
 
+  // Tras recargar, la escucha persiste pero el navegador exige un gesto para audio.
+  useEffect(() => {
+    if (!listenConfig || audioReady || pendingForListen.length === 0) return;
+    if (!wasAudioUnlockedThisSession()) return;
+
+    const tryResume = () => {
+      void enableAlertAudio(setAudioReady);
+    };
+    window.addEventListener("pointerdown", tryResume, { once: true });
+    window.addEventListener("keydown", tryResume, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", tryResume);
+      window.removeEventListener("keydown", tryResume);
+    };
+  }, [listenConfig, audioReady, pendingForListen.length]);
+
+  async function enableAudioAlert(): Promise<void> {
+    await enableAlertAudio(setAudioReady);
+  }
+
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
-    await unlockBellAudio();
-    setAudioReady(true);
+    await enableAudioAlert();
     const err = await saveListenConfig({ floor, sector, role });
     if (err) setError(err);
     setSaving(false);
   }
 
-  async function handleTestBell() {
-    await unlockBellAudio();
-    setAudioReady(true);
-    await playBell();
+  async function handleTestSound() {
+    await enableAudioAlert();
+    const kind = resolveAlertKind(pendingForListen) ?? "bell";
+    if (kind === "video") await playVideoAlert();
+    else await playBell();
   }
 
   async function updateCall(id: string, action: string) {
+    await enableAudioAlert();
     if (!token) return;
     const res = await fetch(`/api/calls/${id}`, {
       method: "PATCH",
@@ -193,10 +215,28 @@ export default function DashboardPage() {
       />
 
       {!audioReady && pendingForListen.length > 0 && (
-        <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Hay llamados pendientes. Use <strong>Probar timbre</strong> o{" "}
-          <strong>Activar escucha</strong> para habilitar la alerta sonora.
-        </p>
+        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <p className="font-medium">
+            {alertKind === "video"
+              ? "Videollamada pendiente — alerta sonora desactivada"
+              : "Llamado pendiente — alerta sonora desactivada"}
+          </p>
+          <p className="mt-1 text-amber-900">
+            El navegador requiere un clic suyo para reproducir sonido (timbre o
+            video).
+          </p>
+          <button
+            type="button"
+            onClick={() => void enableAudioAlert().then(() => {
+              const kind = resolveAlertKind(pendingForListen);
+              if (kind === "video") void playVideoAlert();
+              else if (kind === "bell") void playBell();
+            })}
+            className="mt-3 min-h-11 rounded-lg bg-amber-600 px-5 py-2 font-semibold text-white hover:bg-amber-700"
+          >
+            Activar alerta sonora
+          </button>
+        </div>
       )}
 
       {audioReady && alertKind && (
@@ -245,10 +285,10 @@ export default function DashboardPage() {
         <div className="flex items-end gap-2">
           <button
             type="button"
-            onClick={() => void handleTestBell()}
+            onClick={() => void handleTestSound()}
             className="rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
-            Probar timbre
+            Probar sonido
           </button>
           <button
             type="submit"

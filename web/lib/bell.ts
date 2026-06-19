@@ -19,6 +19,11 @@ export async function unlockBellAudio(): Promise<void> {
   }
 }
 
+export function isAudioUnlocked(): boolean {
+  const ctx = sharedContext;
+  return ctx != null && ctx.state === "running";
+}
+
 async function playTone(
   frequencies: number[],
   duration: number,
