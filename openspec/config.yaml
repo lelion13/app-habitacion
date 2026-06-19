@@ -1,0 +1,32 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 16, TypeScript, Tailwind CSS 4, MongoDB (native driver)
+  Architecture: App Router, API routes, lib/ singleton DB, in-memory SSE bus
+  Auth: JWT + bcrypt (dashboard); roomKey env (habitación, sin login)
+  Testing: Jest (lib/), Playwright (e2e/), CI GitHub Actions
+  Style: mobile-first, accent #0d9488, sin imágenes (iconos CSS/SVG)
+
+rules:
+  proposal:
+    - Identificar dominios afectados en openspec/specs/
+    - Incluir plan de rollback si el cambio toca calls o realtime
+  specs:
+    - Usar Given/When/Then en escenarios
+    - Usar RFC 2119 (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Diagramas de secuencia para flujos call/SSE/WebRTC
+    - Documentar decisiones con alternativas descartadas
+  tasks:
+    - Agrupar por fase: specs → backend → frontend → tests → verify
+    - Numeración jerárquica (1.1, 1.2)
+  apply:
+    - Seguir convenciones microprompt (lib/db.ts singleton, proxy sin middleware)
+    - Cambios acotados al dominio del change
+  verify:
+    test_command: npm run test:unit
+    build_command: npm run build
+    e2e_command: npm run test:e2e
+  archive:
+    - Fusionar deltas a openspec/specs/ antes de archivar
+    - No modificar carpetas en changes/archive/

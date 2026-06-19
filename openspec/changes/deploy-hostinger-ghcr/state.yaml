@@ -1,0 +1,9 @@
+change: deploy-hostinger-ghcr
+status: planned
+phase: propose
+created: 2026-06-18
+domains:
+  - deploy
+  - rooms
+  - ui
+  - realtime

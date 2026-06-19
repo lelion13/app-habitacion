@@ -1,0 +1,44 @@
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import type { AuthUser } from "./types";
+
+const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-me";
+
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  name: string;
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
+}
+
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+export function signToken(user: AuthUser): string {
+  const payload: JwtPayload = {
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+  };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "12h" });
+}
+
+export function verifyToken(token: string): JwtPayload | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+export function getBearerToken(authHeader: string | null): string | null {
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  return authHeader.slice(7);
+}
