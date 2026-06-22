@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
+import { StandaloneRoomGuard } from "@/components/StandaloneRoomGuard";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -34,7 +35,10 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          <StandaloneRoomGuard />
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

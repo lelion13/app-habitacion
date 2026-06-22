@@ -1,12 +1,21 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { StaffRole, CallType } from "@/lib/types";
 import { ROLE_LABELS, CALL_TYPE_LABELS } from "@/lib/types";
 import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
 import { PageHeader } from "@/components/PageHeader";
 import { VideoCallSession } from "@/components/VideoCallSession";
+import { InstallRoomBanner } from "@/components/InstallRoomBanner";
+import { RoomUnconfiguredScreen } from "@/components/RoomUnconfiguredScreen";
+import {
+  clearStoredRoomKey,
+  pickRoomKeyCandidate,
+  readStoredRoomKey,
+  setDynamicManifestLink,
+  writeStoredRoomKey,
+} from "@/lib/room-bind";
 
 interface RoomInfo {
   id: string;
@@ -30,47 +39,76 @@ const STATUS_LABELS: Record<string, string> = {
 
 function HabitacionContent() {
   const searchParams = useSearchParams();
-  const roomKey = searchParams.get("key")?.trim() ?? "";
+  const urlKey = searchParams.get("key")?.trim() ?? "";
 
+  const [roomKey, setRoomKey] = useState("");
   const [room, setRoom] = useState<RoomInfo | null>(null);
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
+  const [unconfigured, setUnconfigured] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [calling, setCalling] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [lastCall, setLastCall] = useState<string | null>(null);
 
-  const roomQuery = roomKey ? `?key=${encodeURIComponent(roomKey)}` : "";
-
-  const loadActiveCall = useCallback(async () => {
-    if (!roomKey) return;
-    const res = await fetch(`/api/calls/room${roomQuery}`);
-    if (!res.ok) return;
-    const data = (await res.json()) as { call: ActiveCall | null };
-    setActiveCall(data.call);
-    if (!data.call) setError(null);
-  }, [roomKey, roomQuery]);
+  const roomQuery = useMemo(
+    () => (roomKey ? `?key=${encodeURIComponent(roomKey)}` : ""),
+    [roomKey],
+  );
 
   useEffect(() => {
-    if (!roomKey) {
+    const storedKey = readStoredRoomKey();
+    const candidateKey = pickRoomKeyCandidate(urlKey, storedKey);
+
+    if (!candidateKey) {
+      setRoom(null);
+      setRoomKey("");
+      setUnconfigured(true);
+      setError(null);
       setLoading(false);
-      setError("Abra esta página con /habitacion?key=su-clave-de-habitación");
       return;
     }
 
-    fetch(`/api/room${roomQuery}`)
+    setUnconfigured(false);
+    setLoading(true);
+    setError(null);
+
+    const query = `?key=${encodeURIComponent(candidateKey)}`;
+    let cancelled = false;
+
+    fetch(`/api/room${query}`)
       .then(async (res) => {
         const data = (await res.json()) as RoomInfo & { error?: string };
         if (!res.ok) throw new Error(data.error ?? "Error");
+        if (cancelled) return;
+        writeStoredRoomKey(candidateKey);
+        setDynamicManifestLink(candidateKey);
+        setRoomKey(candidateKey);
         setRoom(data);
-        return data.id;
+
+        const callRes = await fetch(`/api/calls/room${query}`);
+        if (!callRes.ok || cancelled) return;
+        const callData = (await callRes.json()) as { call: ActiveCall | null };
+        setActiveCall(callData.call);
       })
-      .then(async () => {
-        await loadActiveCall();
+      .catch(() => {
+        if (cancelled) return;
+        setRoom(null);
+        setRoomKey("");
+        if (!urlKey && storedKey) {
+          clearStoredRoomKey();
+        }
+        setUnconfigured(true);
+        setError(null);
       })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [roomKey, roomQuery, loadActiveCall]);
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [urlKey]);
 
   useEffect(() => {
     if (!room) return;
@@ -149,15 +187,8 @@ function HabitacionContent() {
     );
   }
 
-  if (error && !room) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
-        <p className="text-lg font-semibold text-red-600">{error}</p>
-        <p className="mt-2 text-sm text-slate-600">
-          Ejemplo: /habitacion?key=room-101-key
-        </p>
-      </main>
-    );
+  if (unconfigured) {
+    return <RoomUnconfiguredScreen />;
   }
 
   const roles: StaffRole[] = ["nurse", "quality", "doctor"];
@@ -179,6 +210,8 @@ function HabitacionContent() {
       )}
 
       <div className={`mx-auto max-w-lg ${showVideoSession ? "hidden" : ""}`}>
+        <InstallRoomBanner roomReady={Boolean(room)} />
+
         <PageHeader
           title={room!.label}
           subtitle={`Piso ${room!.floor} · Sector ${room!.sector}`}

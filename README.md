@@ -52,11 +52,16 @@ https://habitacion.lionapp.cloud/habitacion?key=room-101-key
 
 Deploy: ver [docs/deploy-hostinger.md](./docs/deploy-hostinger.md).
 
-## PWA Android
+## PWA Android (tablet por habitación)
 
-1. Abrir URL con `?key=room-XXX` en Chrome Android
-2. Menú → “Instalar aplicación” / “Añadir a pantalla de inicio”
-3. Una URL fija por tablet (sin rebuild por habitación)
+1. En Chrome Android, abrir la URL de la habitación, por ejemplo:
+   `https://habitacion.lionapp.cloud/habitacion?key=room-101-key`
+2. Verificar que carga la habitación correcta.
+3. Usar el banner **Instalar en esta tablet** o menú → Instalar aplicación.
+4. Al abrir el ícono, la app recuerda la habitación (manifest dinámico + almacenamiento local).
+5. Si la tablet no está configurada, muestra *Contacte a soporte técnico* (sin campo editable).
+
+Una URL por tablet; la key no es modificable por el usuario final.
 
 ## Tests
 

@@ -54,6 +54,7 @@ Guía rápida para orientarse en el repo y en SDD.
 
 | Change | Resumen |
 |--------|---------|
+| [pwa-tablet-room-bind](../openspec/changes/pwa-tablet-room-bind/) | PWA tablet con habitación fija al instalar |
 | [call-alerts-and-history](../openspec/changes/call-alerts-and-history/) | Alerta persistente + historial `/estadisticas` |
 
 ## Docs operativos

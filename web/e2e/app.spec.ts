@@ -18,10 +18,10 @@ test.describe("App Habitación", () => {
     await expect(page.getByLabel("Correo")).toBeVisible();
   });
 
-  test("habitacion page loads or shows config error", async ({ page }) => {
+  test("habitacion page loads or shows support screen", async ({ page }) => {
     await page.goto("/habitacion");
     await expect(
-      page.getByText(/Cargando habitación|Configure NEXT_PUBLIC_ROOM_KEY|Habitación/i),
+      page.getByText(/Cargando habitación|Dispositivo no configurado|soporte técnico/i),
     ).toBeVisible({ timeout: 10000 });
   });
 });

@@ -1,0 +1,10 @@
+change: pwa-tablet-room-bind
+status: implemented
+phase: verify
+created: 2026-06-22
+domains:
+  - rooms
+  - ui
+requirement: |
+  PWA Android instalable por habitación: persistir roomKey al instalar,
+  manifest dinámico, nombre por habitación, sin reconfiguración por usuario.

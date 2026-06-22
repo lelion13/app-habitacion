@@ -78,11 +78,23 @@ Actualizar prod tras push a `main`:
 
 Orden recomendado: staff abre video **antes** o **después** de habitación — el polling de señales cubre ambos casos.
 
+## Alta tablet Android (PWA)
+
+1. Chrome → `https://habitacion.lionapp.cloud/habitacion?key=room-XXX-key`
+2. Confirmar habitación correcta en pantalla
+3. Banner **Instalar en esta tablet** o menú → Instalar aplicación
+4. Abrir ícono (nombre = label de habitación, ej. Habitación 101)
+5. Debe cargar sin pedir key
+
+Si muestra *Dispositivo no configurado*: reinstalar desde el link con `?key=` correcto o borrar datos de la app en Android.
+
 ## Problemas frecuentes
 
 | Síntoma | Causa probable | Acción |
 |---------|----------------|--------|
 | Habitación no encontrada | Seed no ejecutado o `key` incorrecta | Seed dev; revisar `?key=` |
+| PWA abre sin habitación | Instaló sin visitar URL con key | Reinstalar desde link `?key=room-XXX-key` |
+| Dispositivo no configurado | Sin key en URL ni storage | Flujo alta tablet arriba |
 | Llamado activo bloqueado | Call `pending`/`accepted` en BD | Cancelar desde habitación |
 | Dashboard sin sonido | Autoplay del navegador | **Probar timbre** / **Activar escucha** |
 | SSE sin eventos (dev) | Hot reload reinicia bus | Recargar dashboard |
