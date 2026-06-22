@@ -41,7 +41,10 @@ export function pickRoomKeyCandidate(
 
 export function isStandalonePwa(): boolean {
   if (typeof window === "undefined") return false;
-  if (window.matchMedia("(display-mode: standalone)").matches) return true;
+  const displayModes = ["fullscreen", "standalone"] as const;
+  if (displayModes.some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches)) {
+    return true;
+  }
   const nav = window.navigator as Navigator & { standalone?: boolean };
   return nav.standalone === true;
 }

@@ -10,9 +10,13 @@ interface BeforeInstallPromptEvent extends Event {
 
 interface InstallRoomBannerProps {
   roomReady: boolean;
+  roomLabel?: string;
 }
 
-export function InstallRoomBanner({ roomReady }: InstallRoomBannerProps) {
+export function InstallRoomBanner({
+  roomReady,
+  roomLabel,
+}: InstallRoomBannerProps) {
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [hidden, setHidden] = useState(false);
@@ -30,7 +34,7 @@ export function InstallRoomBanner({ roomReady }: InstallRoomBannerProps) {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, [roomReady]);
 
-  if (!roomReady || isStandalonePwa() || hidden || !installEvent) {
+  if (!roomReady || isStandalonePwa() || hidden) {
     return null;
   }
 
@@ -47,28 +51,38 @@ export function InstallRoomBanner({ roomReady }: InstallRoomBannerProps) {
     }
   }
 
+  const iconName = roomLabel ?? "esta habitación";
+
   return (
     <div className="mb-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3">
       <p className="text-sm font-medium text-sky-950">
-        Instale la app en esta tablet para abrirla desde el ícono del inicio.
+        Instale la app en esta tablet para abrirla a pantalla completa desde el
+        inicio. El icono debe llamarse «{iconName}».
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={installing}
-          onClick={() => void handleInstall()}
-          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-50"
-        >
-          {installing ? "Instalando…" : "Instalar en esta tablet"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setHidden(true)}
-          className="rounded-lg border border-sky-300 px-4 py-2 text-sm font-medium text-sky-900 hover:bg-sky-100"
-        >
-          Ahora no
-        </button>
-      </div>
+      {installEvent && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={installing}
+            onClick={() => void handleInstall()}
+            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-50"
+          >
+            {installing ? "Instalando…" : "Instalar en esta tablet"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setHidden(true)}
+            className="rounded-lg border border-sky-300 px-4 py-2 text-sm font-medium text-sky-900 hover:bg-sky-100"
+          >
+            Ahora no
+          </button>
+        </div>
+      )}
+      <p className="mt-3 text-xs leading-relaxed text-sky-900/80">
+        Si no aparece el botón de instalar: abra el menú ⋮ de Chrome y elija
+        «Instalar aplicación» o «Agregar a la pantalla principal». Use siempre
+        el enlace con clave de esta habitación.
+      </p>
     </div>
   );
 }

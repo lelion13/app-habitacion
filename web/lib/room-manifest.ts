@@ -1,3 +1,5 @@
+import { PWA_ICONS } from "@/lib/pwa-icons";
+
 export interface RoomManifestInput {
   roomKey: string;
   label: string;
@@ -20,17 +22,11 @@ export function buildRoomManifest({ roomKey, label, number }: RoomManifestInput)
     description: `Llamados hospitalarios — ${label}`,
     start_url: startUrl,
     scope: "/",
-    display: "standalone",
+    display: "fullscreen",
+    display_override: ["fullscreen", "standalone"],
     background_color: "#f8fafc",
     theme_color: "#0d9488",
     orientation: "portrait",
-    icons: [
-      {
-        src: "/icons/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "any maskable",
-      },
-    ],
+    icons: [...PWA_ICONS],
   };
 }

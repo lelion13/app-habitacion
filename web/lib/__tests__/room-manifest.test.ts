@@ -10,7 +10,7 @@ describe("room-manifest", () => {
     });
     expect(manifest.start_url).toBe("/habitacion?key=room-101-key");
     expect(manifest.name).toBe("Habitación 101");
-    expect(manifest.display).toBe("standalone");
+    expect(manifest.display).toBe("fullscreen");
   });
 
   it("truncates long labels for short_name", () => {
