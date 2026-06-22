@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isStandalonePwa } from "@/lib/room-bind";
+import { useIsStandalonePwa } from "@/lib/use-is-standalone-pwa";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -17,13 +17,14 @@ export function InstallRoomBanner({
   roomReady,
   roomLabel,
 }: InstallRoomBannerProps) {
+  const { ready: standaloneReady, standalone } = useIsStandalonePwa();
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [hidden, setHidden] = useState(false);
   const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
-    if (!roomReady || isStandalonePwa()) return;
+    if (!roomReady || !standaloneReady || standalone) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -32,9 +33,9 @@ export function InstallRoomBanner({
 
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, [roomReady]);
+  }, [roomReady, standaloneReady, standalone]);
 
-  if (!roomReady || isStandalonePwa() || hidden) {
+  if (!roomReady || !standaloneReady || standalone || hidden) {
     return null;
   }
 

@@ -11,6 +11,7 @@ import { InstallRoomBanner } from "@/components/InstallRoomBanner";
 import { RoomUnconfiguredScreen } from "@/components/RoomUnconfiguredScreen";
 import {
   clearStoredRoomKey,
+  markPwaInstalled,
   pickRoomKeyCandidate,
   readStoredRoomKey,
   setDynamicManifestLink,
@@ -59,6 +60,10 @@ export function HabitacionClient() {
 
   useEffect(() => {
     registerServiceWorker();
+
+    const onInstalled = () => markPwaInstalled();
+    window.addEventListener("appinstalled", onInstalled);
+    return () => window.removeEventListener("appinstalled", onInstalled);
   }, []);
 
   useEffect(() => {
