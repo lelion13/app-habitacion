@@ -1,6 +1,6 @@
 # Arquitectura — App Habitación
 
-Estado documentado: **prod operativo** (2026-06-19) — baseline MVP + deploy Hostinger + WebRTC.
+Estado documentado: **prod operativo** (2026-06-22) — baseline MVP + deploy Hostinger + WebRTC + alertas Telegram.
 
 ## Vista general
 
@@ -51,9 +51,10 @@ flowchart TB
 ## Colecciones MongoDB
 
 - `rooms` — identidad física (piso, sector, número)
-- `users` — personal con acceso al dashboard
-- `staff_sessions` — piso/sector/rol que escucha cada usuario
+- `users` — personal con acceso al dashboard (`telegramChatId`, `telegramNotifyEnabled` opcionales)
+- `staff_sessions` — piso/sector/rol que escucha cada usuario (`active: true` para notify Telegram)
 - `calls` — llamados timbre/video con ciclo de vida
+- `telegram_link_tokens` — tokens one-time para vincular cuenta con bot
 
 ## Canales realtime (SSE)
 
@@ -88,6 +89,19 @@ sequenceDiagram
 
 Implementación: `components/VideoCallSession.tsx`, `lib/webrtc.ts`, `lib/webrtc-signal.ts`.
 
+## Alertas Telegram (staff)
+
+Bot prod: **`@habitacionesBot`**. Flujo:
+
+1. Staff genera link (`POST /api/staff/telegram/link`) y abre chat privado con el bot.
+2. Webhook `POST /api/telegram/webhook` completa vinculación (`/start link_{token}`).
+3. Al crear llamado (`POST /api/calls`), `notifyTelegramStaffForCall` busca `staff_sessions` activas que coincidan en piso/sector/rol **y** usuarios con `telegramChatId`.
+4. Envía **un DM por destinatario** vía Bot API (`sendMessage`). No hay canal grupal en v1.
+
+Requiere **Activar escucha** en dashboard (misma zona/rol que el llamado). Ver [deploy-hostinger.md](./deploy-hostinger.md#telegram-alertas-staff).
+
+Implementación: `lib/telegram.ts`, `lib/telegram-link.ts`, `lib/telegram-recipients.ts`.
+
 ## Decisiones de arquitectura (ADR)
 
 | ID | Decisión | Alternativa descartada | Motivo |
@@ -103,6 +117,8 @@ Implementación: `components/VideoCallSession.tsx`, `lib/webrtc.ts`, `lib/webrtc
 | ADR-V02 | Overlay video en habitación | Ruta `/habitacion/video/[id]` | Mantener SSE room activo |
 | ADR-V03 | Habitación = offerer | Staff offerer | Staff entra tarde al abrir link |
 | ADR-V04 | STUN público sin TURN v1 | TURN self-hosted | Menos ops; backlog si NAT falla |
+| ADR-T01 | Telegram DM a staff vinculado | Grupo/canal por piso | Privacidad; match escucha activa |
+| ADR-T02 | Webhook + deep link one-time | Login OAuth Telegram | Menos superficie; staff ya usa JWT |
 
 ## Estructura de código
 
@@ -110,7 +126,9 @@ Implementación: `components/VideoCallSession.tsx`, `lib/webrtc.ts`, `lib/webrtc
 web/
 ├── app/
 │   ├── api/
-│   │   └── calls/[id]/signal/   # WebRTC signaling
+│   │   ├── calls/[id]/signal/   # WebRTC signaling
+│   │   ├── staff/telegram/      # Vinculación cuenta
+│   │   └── telegram/webhook/    # Bot updates
 │   ├── habitacion/              # PWA + overlay video
 │   └── dashboard/
 │       └── video/[callId]/      # Staff video
@@ -124,7 +142,10 @@ web/
 │   ├── bell.ts
 │   ├── webrtc.ts
 │   ├── webrtc-signal.ts
-│   └── signal-buffer.ts
+│   ├── signal-buffer.ts
+│   ├── telegram.ts
+│   ├── telegram-link.ts
+│   └── telegram-recipients.ts
 └── context/
     └── AppContext.tsx
 ```
@@ -148,3 +169,4 @@ Ver [docs/deploy-hostinger.md](./deploy-hostinger.md).
 | SSE horizontal scaling (Redis) | Media |
 | Admin CRUD habitaciones/usuarios | Media |
 | Service Worker offline | Baja |
+| Botones inline Telegram en mensajes | Baja |

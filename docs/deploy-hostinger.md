@@ -87,7 +87,11 @@ curl -sS "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
   -d "{\"url\":\"https://habitacion.lionapp.cloud/api/telegram/webhook\",\"secret_token\":\"$TELEGRAM_WEBHOOK_SECRET\"}"
 ```
 
-**Flujo:** Dashboard → Conectar Telegram → abrir bot → `/start link_…` → Activar escucha → llamado desde habitación.
+**Flujo:** Dashboard → Conectar Telegram → abrir `@habitacionesBot` en chat **privado** → `/start link_…` → **Activar escucha** (mismo piso/sector/rol que el llamado) → llamado desde habitación.
+
+**Destinatarios:** mensaje **directo** a cada usuario vinculado con escucha activa que coincida; no es un canal grupal ni broadcast al piso.
+
+**Logs:** tras crear llamado, el contenedor web puede registrar `[telegram] no recipients` o `[telegram] sending call alert` (sin secretos).
 
 **Seguridad:** nunca commitear el token; rotar en BotFather si se expone.
 

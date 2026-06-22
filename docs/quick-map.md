@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 operativos.
+**Estado actual (2026-06-22):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram operativos.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -24,6 +24,8 @@ Guía rápida para orientarse en el repo y en SDD.
 | API | `web/app/api/` |
 | Signaling WebRTC | `web/app/api/calls/[id]/signal/` |
 | Lógica compartida | `web/lib/` |
+| Telegram (notify + link) | `web/lib/telegram.ts`, `web/lib/telegram-link.ts`, `web/lib/telegram-recipients.ts` |
+| API Telegram | `web/app/api/telegram/webhook/`, `web/app/api/staff/telegram/` |
 | VideoCallSession | `web/components/VideoCallSession.tsx` |
 | Estado global | `web/context/AppContext.tsx` |
 
@@ -46,13 +48,13 @@ Guía rápida para orientarse en el repo y en SDD.
 | [deploy-hostinger-ghcr](../openspec/changes/archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik + `?key=` |
 | [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
 | [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar |
+| [telegram-staff-alerts](../openspec/changes/archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram si escucha activa + vinculado |
 
 ## Changes activos
 
 | Change | Resumen |
 |--------|---------|
 | [call-alerts-and-history](../openspec/changes/call-alerts-and-history/) | Alerta persistente + historial `/estadisticas` |
-| [telegram-staff-alerts](../openspec/changes/telegram-staff-alerts/) | Push Telegram si escucha activa + vinculado |
 
 ## Docs operativos
 

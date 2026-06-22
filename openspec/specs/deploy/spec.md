@@ -51,6 +51,27 @@ Initial seed completed 2026-06-19; bootstrap disabled after.
 ### REQ-DEPLOY-010: DNS
 `habitacion.lionapp.cloud` A record MUST point to `177.7.37.78`.
 
+### REQ-DEPLOY-011: Secrets Telegram
+
+Production stack MUST provide:
+- `TELEGRAM_BOT_TOKEN` — BotFather token (required for notify + webhook)
+- `TELEGRAM_BOT_USERNAME` — bot username without `@` (for deep links; prod: `habitacionesBot`)
+- `TELEGRAM_WEBHOOK_SECRET` — optional header validation
+
+Values MUST NOT be committed to git; set via Hostinger project environment.
+
+#### Scenario: Token ausente
+- **GIVEN** `TELEGRAM_BOT_TOKEN` unset
+- **WHEN** call is created
+- **THEN** call creation MUST succeed; Telegram send MAY be skipped with server log (no user-facing error)
+
+### REQ-DEPLOY-012: Webhook Telegram
+
+After deploy, webhook MUST point to:
+`https://habitacion.lionapp.cloud/api/telegram/webhook`
+
+Document setup steps in `docs/deploy-hostinger.md`.
+
 ## Operación
 
 | Acción | Método |
@@ -67,3 +88,4 @@ Runbook detallado: [docs/deploy-hostinger.md](../../docs/deploy-hostinger.md).
 |--------|-----------|-------|
 | deploy-hostinger-ghcr | `openspec/changes/archive/2026-06-19-deploy-hostinger-ghcr/` | 2026-06-19 |
 | room-video-webrtc | `openspec/changes/archive/2026-06-19-room-video-webrtc/` | 2026-06-19 |
+| telegram-staff-alerts | `openspec/changes/archive/2026-06-22-telegram-staff-alerts/` | 2026-06-22 |

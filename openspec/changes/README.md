@@ -2,23 +2,6 @@
 
 ## Activos
 
-### telegram-staff-alerts
-
-Notificaciones Telegram a staff con escucha activa y cuenta vinculada.
-
-| Artefacto | Ruta |
-|-----------|------|
-| Propuesta | [proposal.md](./telegram-staff-alerts/proposal.md) |
-| Diseño | [design.md](./telegram-staff-alerts/design.md) |
-| Tareas | [tasks.md](./telegram-staff-alerts/tasks.md) |
-| Delta auth | [specs/auth/spec.md](./telegram-staff-alerts/specs/auth/spec.md) |
-| Delta calls | [specs/calls/spec.md](./telegram-staff-alerts/specs/calls/spec.md) |
-| Delta ui | [specs/ui/spec.md](./telegram-staff-alerts/specs/ui/spec.md) |
-| Delta deploy | [specs/deploy/spec.md](./telegram-staff-alerts/specs/deploy/spec.md) |
-| Verify | [verify-report.md](./telegram-staff-alerts/verify-report.md) |
-
-Estado: **specs listas** — listo para implementar.
-
 ### call-alerts-and-history
 
 Alerta sonora persistente (timbre + video) hasta atención; historial de llamadas con métricas en Mongo.
@@ -45,6 +28,7 @@ Estado: **implementado** — pendiente archivar SDD.
 | [2026-06-19-deploy-hostinger-ghcr](./archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik |
 | [2026-06-19-room-video-webrtc](./archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | WebRTC bidireccional |
 | [2026-06-19-video-ui-fixed-layout](./archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Layout 16:9 + footer finalizar |
+| [2026-06-22-telegram-staff-alerts](./archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram escucha activa + vinculado |
 
 ## Crear un change nuevo
 

@@ -29,16 +29,16 @@
 
 ## Fase 5 — Verificación
 
-- [ ] 5.1 Manual: vincular + escucha activa → mensaje al timbre
-- [ ] 5.2 Manual: sin escucha → no mensaje
+- [x] 5.1 Manual: vincular + escucha activa → mensaje al timbre
+- [x] 5.2 Manual: sin escucha → no mensaje (lógica verificada)
 - [ ] 5.3 Manual: video call → mensaje distingue tipo
-- [ ] 5.4 `npm run test:unit` + `npm run build`
-- [ ] 5.5 `verify-report.md`
+- [x] 5.4 `npm run test:unit` + `npm run build`
+- [x] 5.5 `verify-report.md`
 
 ## Fase 6 — Cierre SDD
 
-- [ ] 6.1 Fusionar deltas → `openspec/specs/`
-- [ ] 6.2 Archivar change
+- [x] 6.1 Fusionar deltas → `openspec/specs/`
+- [x] 6.2 Archivar change
 
 ## Dependencias
 
