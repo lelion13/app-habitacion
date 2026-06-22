@@ -69,6 +69,28 @@ Commits recientes en prod: `4838066` (deploy), `ebf4e57` (WebRTC), `32d5a69` (fi
 
 Ver [runbook.md](./runbook.md) troubleshooting si queda en "Conectando…".
 
+## Telegram (alertas staff)
+
+Variables en el stack Hostinger (`app-habitacion` web):
+
+| Variable | Descripción |
+|----------|-------------|
+| `TELEGRAM_BOT_TOKEN` | Token de BotFather (secreto) |
+| `TELEGRAM_BOT_USERNAME` | `habitacionesBot` (sin @) |
+| `TELEGRAM_WEBHOOK_SECRET` | Opcional; string aleatorio para validar webhook |
+
+Tras deploy, registrar webhook (una vez):
+
+```bash
+curl -sS "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d "{\"url\":\"https://habitacion.lionapp.cloud/api/telegram/webhook\",\"secret_token\":\"$TELEGRAM_WEBHOOK_SECRET\"}"
+```
+
+**Flujo:** Dashboard → Conectar Telegram → abrir bot → `/start link_…` → Activar escucha → llamado desde habitación.
+
+**Seguridad:** nunca commitear el token; rotar en BotFather si se expone.
+
 ## Seed inicial (una vez)
 
 Con `BOOTSTRAP_ENABLED=true` en el stack:

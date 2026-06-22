@@ -42,6 +42,12 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState<{
+    linked: boolean;
+    username: string | null;
+    notifyEnabled: boolean;
+  } | null>(null);
+  const [telegramBusy, setTelegramBusy] = useState(false);
 
   const pendingForListen = useMemo(() => {
     if (!listenConfig) return [];
@@ -153,6 +159,58 @@ export default function DashboardPage() {
       window.removeEventListener("keydown", tryResume);
     };
   }, [listenConfig, audioReady, pendingForListen.length]);
+
+  const loadTelegramStatus = useCallback(async () => {
+    if (!token) return;
+    const res = await fetch("/api/staff/telegram", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      setTelegramStatus(
+        (await res.json()) as {
+          linked: boolean;
+          username: string | null;
+          notifyEnabled: boolean;
+        },
+      );
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void loadTelegramStatus();
+  }, [loadTelegramStatus]);
+
+  async function connectTelegram() {
+    if (!token) return;
+    setTelegramBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/staff/telegram/link", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = (await res.json()) as { error?: string; url?: string };
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? "No se pudo generar el enlace");
+      }
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error Telegram");
+    } finally {
+      setTelegramBusy(false);
+    }
+  }
+
+  async function disconnectTelegram() {
+    if (!token) return;
+    setTelegramBusy(true);
+    await fetch("/api/staff/telegram", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    await loadTelegramStatus();
+    setTelegramBusy(false);
+  }
 
   async function enableAudioAlert(): Promise<void> {
     await enableAlertAudio(setAudioReady);
@@ -299,6 +357,43 @@ export default function DashboardPage() {
           </button>
         </div>
       </form>
+
+      <section className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">
+          Notificaciones Telegram
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Reciba un mensaje en el celular cuando haya un llamado y tenga{" "}
+          <strong>escucha activa</strong> en este dashboard.
+        </p>
+        {telegramStatus?.linked ? (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="rounded-full bg-teal-100 px-3 py-1 text-sm font-medium text-teal-900">
+              Vinculado
+              {telegramStatus.username
+                ? ` · @${telegramStatus.username}`
+                : ""}
+            </span>
+            <button
+              type="button"
+              disabled={telegramBusy}
+              onClick={() => void disconnectTelegram()}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Desvincular
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={telegramBusy || !token}
+            onClick={() => void connectTelegram()}
+            className="mt-4 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-50"
+          >
+            {telegramBusy ? "Generando enlace…" : "Conectar Telegram"}
+          </button>
+        )}
+      </section>
 
       {error && (
         <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">

@@ -6,6 +6,7 @@ import { isCallType, isStaffRole, validateListenConfig } from "@/lib/validation"
 import { resolveRoomKey } from "@/lib/room-key";
 import { serializeCall, ACTIVE_CALL_STATUSES } from "@/lib/calls";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
+import { notifyTelegramStaffForCall } from "@/lib/telegram";
 import type { Call, Room, StaffRole } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -67,6 +68,10 @@ export async function POST(request: NextRequest) {
 
     publishCallEvent(room.floor, room.sector, targetRole, "call:new", serialized);
     publishRoomEvent(room._id!.toString(), "call:new", serialized);
+
+    void notifyTelegramStaffForCall(created as Call).catch(() => {
+      /* Telegram failure must not affect call creation */
+    });
 
     return NextResponse.json({ call: serialized }, { status: 201 });
   } catch {

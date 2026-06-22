@@ -1,0 +1,13 @@
+change: telegram-staff-alerts
+status: implemented
+phase: verify
+created: 2026-06-19
+domains:
+  - auth
+  - calls
+  - realtime
+  - deploy
+  - ui
+requirement: |
+  Un mensaje Telegram al crear llamado, solo a staff con escucha activa
+  (mismo piso/sector/rol) y cuenta vinculada.

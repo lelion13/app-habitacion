@@ -19,6 +19,19 @@ export interface User {
   passwordHash: string;
   name: string;
   createdAt: Date;
+  telegramChatId?: string;
+  telegramUsername?: string;
+  telegramLinkedAt?: Date;
+  telegramNotifyEnabled?: boolean;
+}
+
+export interface TelegramLinkToken {
+  _id?: ObjectId;
+  token: string;
+  userId: ObjectId;
+  expiresAt: Date;
+  used: boolean;
+  createdAt: Date;
 }
 
 export interface StaffSession {

@@ -32,6 +32,9 @@ services:
       NEXT_PUBLIC_ROOM_KEY: ${NEXT_PUBLIC_ROOM_KEY:-}
       BOOTSTRAP_ENABLED: ${BOOTSTRAP_ENABLED}
       TZ: ${TZ}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-habitacionesBot}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
     depends_on:
       mongodb:
         condition: service_healthy

@@ -2,6 +2,23 @@
 
 ## Activos
 
+### telegram-staff-alerts
+
+Notificaciones Telegram a staff con escucha activa y cuenta vinculada.
+
+| Artefacto | Ruta |
+|-----------|------|
+| Propuesta | [proposal.md](./telegram-staff-alerts/proposal.md) |
+| Diseño | [design.md](./telegram-staff-alerts/design.md) |
+| Tareas | [tasks.md](./telegram-staff-alerts/tasks.md) |
+| Delta auth | [specs/auth/spec.md](./telegram-staff-alerts/specs/auth/spec.md) |
+| Delta calls | [specs/calls/spec.md](./telegram-staff-alerts/specs/calls/spec.md) |
+| Delta ui | [specs/ui/spec.md](./telegram-staff-alerts/specs/ui/spec.md) |
+| Delta deploy | [specs/deploy/spec.md](./telegram-staff-alerts/specs/deploy/spec.md) |
+| Verify | [verify-report.md](./telegram-staff-alerts/verify-report.md) |
+
+Estado: **specs listas** — listo para implementar.
+
 ### call-alerts-and-history
 
 Alerta sonora persistente (timbre + video) hasta atención; historial de llamadas con métricas en Mongo.
@@ -16,7 +33,7 @@ Alerta sonora persistente (timbre + video) hasta atención; historial de llamada
 | Delta realtime | [specs/realtime/spec.md](./call-alerts-and-history/specs/realtime/spec.md) |
 | Verify | [verify-report.md](./call-alerts-and-history/verify-report.md) |
 
-Estado: **implementado** — pendiente verificación manual y deploy.
+Estado: **implementado** — pendiente archivar SDD.
 
 ---
 
