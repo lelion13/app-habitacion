@@ -220,12 +220,13 @@ export function HabitacionClient() {
       )}
 
       <div className={`mx-auto max-w-lg ${showVideoSession ? "hidden" : ""}`}>
-        <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
-
         <PageHeader
+          showInstitutionLogo
           title={room!.label}
           subtitle={`Piso ${room!.floor} · Sector ${room!.sector}`}
         />
+
+        <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
 
         {activeCall && (
           <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">

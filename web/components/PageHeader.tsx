@@ -1,14 +1,22 @@
 import Link from "next/link";
+import { InstitutionBrand } from "@/components/InstitutionBrand";
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
   backHref?: string;
+  showInstitutionLogo?: boolean;
 }
 
-export function PageHeader({ title, subtitle, backHref }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  subtitle,
+  backHref,
+  showInstitutionLogo = false,
+}: PageHeaderProps) {
   return (
     <header className="mb-8">
+      {showInstitutionLogo && <InstitutionBrand className="mb-6" />}
       {backHref && (
         <Link
           href={backHref}

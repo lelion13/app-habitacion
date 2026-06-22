@@ -1,6 +1,9 @@
+import { InstitutionBrand } from "@/components/InstitutionBrand";
+
 export function RoomUnconfiguredScreen() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
+      <InstitutionBrand className="mb-8" />
       <p className="text-xl font-semibold text-slate-900">
         Dispositivo no configurado
       </p>
