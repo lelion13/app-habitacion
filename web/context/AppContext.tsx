@@ -60,6 +60,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const data = (await res.json()) as { user: AuthUser };
         setToken(storedToken);
         setUser(data.user);
+
+        const sessionRes = await fetch("/api/staff/session", {
+          headers: { Authorization: `Bearer ${storedToken}` },
+        });
+        if (sessionRes.ok) {
+          const sessionData = (await sessionRes.json()) as {
+            listenConfig: ListenConfig | null;
+          };
+          if (sessionData.listenConfig) {
+            setListenConfigState(sessionData.listenConfig);
+            localStorage.setItem(
+              LISTEN_KEY,
+              JSON.stringify(sessionData.listenConfig),
+            );
+          } else {
+            setListenConfigState(null);
+            localStorage.removeItem(LISTEN_KEY);
+          }
+        }
       })
       .catch(() => {
         localStorage.removeItem(TOKEN_KEY);
@@ -82,6 +101,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(TOKEN_KEY, data.token!);
     setToken(data.token!);
     setUser(data.user!);
+
+    const sessionRes = await fetch("/api/staff/session", {
+      headers: { Authorization: `Bearer ${data.token}` },
+    });
+    if (sessionRes.ok) {
+      const sessionData = (await sessionRes.json()) as {
+        listenConfig: ListenConfig | null;
+      };
+      if (sessionData.listenConfig) {
+        setListenConfigState(sessionData.listenConfig);
+        localStorage.setItem(
+          LISTEN_KEY,
+          JSON.stringify(sessionData.listenConfig),
+        );
+      }
+    }
+
     return null;
   }, []);
 

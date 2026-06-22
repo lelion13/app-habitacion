@@ -24,8 +24,8 @@
 ## Fase 4 — Deploy y docs
 
 - [x] 4.1 Env vars en `deploy-hostinger.md` + `.env.prod.example`
-- [ ] 4.2 Crear bot BotFather + configurar webhook prod
-- [ ] 4.3 Variables en Hostinger `app-habitacion`
+- [x] 4.2 Crear bot BotFather + configurar webhook prod
+- [x] 4.3 Variables en Hostinger `app-habitacion`
 
 ## Fase 5 — Verificación
 

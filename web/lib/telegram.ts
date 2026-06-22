@@ -57,7 +57,12 @@ export async function sendTelegramMessage(
     },
   );
 
-  return res.ok;
+  if (!res.ok) {
+    console.warn("[telegram] sendMessage failed", { status: res.status });
+    return false;
+  }
+
+  return true;
 }
 
 export async function notifyTelegramStaffForCall(call: Call): Promise<void> {
@@ -65,12 +70,33 @@ export async function notifyTelegramStaffForCall(call: Call): Promise<void> {
 
   const serialized = serializeCall(call);
   const recipients = await findTelegramRecipientsForCall(call);
-  if (recipients.length === 0) return;
+  if (recipients.length === 0) {
+    console.info("[telegram] no recipients for call", {
+      floor: call.floor,
+      sector: call.sector,
+      role: call.targetRole,
+    });
+    return;
+  }
+
+  console.info("[telegram] sending call alert", {
+    recipientCount: recipients.length,
+    floor: call.floor,
+    sector: call.sector,
+    role: call.targetRole,
+  });
 
   const text = formatCallAlertMessage(serialized);
-  await Promise.all(
+  const results = await Promise.all(
     recipients.map((r) => sendTelegramMessage(r.chatId, text)),
   );
+  const failed = results.filter((ok) => !ok).length;
+  if (failed > 0) {
+    console.warn("[telegram] some messages failed", {
+      failed,
+      total: recipients.length,
+    });
+  }
 }
 
 export async function registerTelegramWebhook(): Promise<boolean> {
