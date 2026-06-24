@@ -57,13 +57,14 @@ export function InstallRoomBanner({
 
   return (
     <div
-      className="mx-3 mb-1 shrink-0 rounded-xl border px-3 py-2"
+      className="mx-4 mb-1 shrink-0 rounded-xl border px-3 py-2"
       style={{
         borderColor: "rgba(56,189,248,0.3)",
         background: "rgba(56,189,248,0.08)",
+        minHeight: "59px",
       }}
     >
-      <p className="text-xs font-semibold leading-snug text-sky-100 sm:text-sm">
+      <p className="text-sm font-semibold leading-snug text-[#dff2fe]">
         Instale la app en esta tablet (icono «{iconName}») para pantalla completa.
       </p>
       {installEvent && (
@@ -87,7 +88,7 @@ export function InstallRoomBanner({
         </div>
       )}
       {!installEvent && (
-        <p className="mt-1 text-[0.65rem] leading-snug sm:text-xs" style={{ color: HABITACION_MUTED }}>
+        <p className="mt-1 text-xs leading-snug" style={{ color: HABITACION_MUTED }}>
           Menú ⋮ → Instalar aplicación
         </p>
       )}

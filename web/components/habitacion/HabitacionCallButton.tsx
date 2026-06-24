@@ -30,9 +30,9 @@ export function HabitacionCallButton({
       <div
         className={`${base} relative overflow-hidden`}
         style={{
-          background: isConnected ? "rgba(16,185,129,0.2)" : "rgba(245,158,11,0.15)",
-          border: `2px solid ${isConnected ? "#10b981" : ringColor}`,
-          color: isConnected ? "#6ee7b7" : "#fcd34d",
+          background: isConnected ? "rgba(0,188,125,0.2)" : "rgba(254,154,0,0.15)",
+          border: `2px solid ${isConnected ? "#00bc7d" : ringColor}`,
+          color: isConnected ? "#5ee9b5" : "#ffd230",
         }}
       >
         {visualState === "calling" && (
@@ -42,14 +42,14 @@ export function HabitacionCallButton({
           />
         )}
         <span className="relative z-10">{icon}</span>
-        <span className="relative z-10 text-sm sm:text-base">{label}</span>
+        <span className="relative z-10 text-base">{label}</span>
         {visualState === "calling" && (
           <span className="relative z-10 text-xs font-bold opacity-75 animate-pulse">
             Llamando...
           </span>
         )}
         {isConnected && (
-          <span className="relative z-10 text-xs font-bold text-emerald-400">
+          <span className="relative z-10 text-xs font-bold text-[#5ee9b5]">
             En atención
           </span>
         )}
@@ -70,7 +70,7 @@ export function HabitacionCallButton({
       }}
     >
       {icon}
-      <span className="text-sm sm:text-base">{label}</span>
+      <span className="text-base">{label}</span>
     </button>
   );
 }

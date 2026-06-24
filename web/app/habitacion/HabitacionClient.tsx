@@ -264,111 +264,116 @@ export function HabitacionClient() {
             : "flex h-full min-h-0 flex-col overflow-hidden"
         }
       >
-        <div className="habitacion-top min-h-0 px-1 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 sm:px-2">
+        <div className="habitacion-top min-h-0 px-1 pt-[max(0.5rem,env(safe-area-inset-top))] pb-1">
           <HabitacionHeader
             title={room!.label}
             subtitle={`Piso ${room!.floor} · Sector ${room!.sector}`}
           />
 
-          <div className="mx-2 mt-3 h-px shrink-0 sm:mx-4" style={{ background: HABITACION_BORDER }} />
+          <div className="mx-4 mt-2 h-px shrink-0" style={{ background: HABITACION_BORDER }} />
 
           <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
 
-          <p
-            className="mt-3 shrink-0 px-3 text-center text-sm font-semibold sm:text-base"
-            style={{ color: HABITACION_MUTED }}
-          >
-            Presione un botón para llamar al sector que necesita
-          </p>
-
           {error && (
-            <p className="mx-3 mt-2 shrink-0 truncate rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs text-red-300">
+            <p className="mx-4 mt-2 shrink-0 truncate rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs text-red-300">
               {error}
             </p>
           )}
           {lastCall && !hasActiveCall && (
-            <p className="mx-3 mt-2 shrink-0 truncate rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+            <p className="mx-4 mt-2 shrink-0 truncate rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
               {lastCall}
             </p>
           )}
         </div>
 
-        <div className="habitacion-sectors">
-          {ROLES.map((role) => {
-            const theme = ROLE_THEME[role];
-            const isActiveSector = activeCall?.targetRole === role;
-            const callState = isActiveSector ? activeCall?.status : null;
+        <div className="habitacion-body">
+          <div className="habitacion-sectors">
+            {ROLES.map((role) => {
+              const theme = ROLE_THEME[role];
+              const isActiveSector = activeCall?.targetRole === role;
+              const callState = isActiveSector ? activeCall?.status : null;
+              const sectionBg = isActiveSector ? theme.activeBgStyle : theme.bgStyle;
 
-            return (
-              <section
-                key={role}
-                className={`relative flex min-h-0 flex-col rounded-xl border px-2 py-1 transition-all duration-300 sm:rounded-2xl ${theme.bgClass} ${theme.borderClass} ${
-                  isActiveSector ? theme.activeBgClass : ""
-                }`}
-              >
-                <div className="relative flex shrink-0 items-center justify-center gap-2 py-1.5 sm:py-2">
-                  <span
-                    className={`text-3xl leading-none sm:text-4xl ${theme.textClass}`}
-                    aria-hidden
-                  >
-                    {theme.icon}
-                  </span>
-                  <span
-                    className={`text-center text-xl font-black leading-tight sm:text-2xl ${theme.textClass}`}
-                  >
-                    {ROLE_LABELS[role]}
-                  </span>
-
-                  {isActiveSector && callState === "accepted" && (
-                    <span className="absolute right-1 flex items-center gap-1 text-xs font-bold text-emerald-400">
-                      <CheckCircle size={14} />
-                      <span className="hidden min-[600px]:inline">En atención · </span>
-                      {formatElapsed(callElapsed)}
+              return (
+                <section
+                  key={role}
+                  className="relative flex min-h-0 flex-col rounded-2xl border px-2 py-1 transition-all duration-300"
+                  style={{
+                    background: sectionBg,
+                    borderColor: theme.borderStyle,
+                  }}
+                >
+                  <div className="relative flex shrink-0 items-center justify-center gap-2 py-2">
+                    <span
+                      className={`text-4xl leading-none ${theme.textClass}`}
+                      aria-hidden
+                    >
+                      {theme.icon}
                     </span>
-                  )}
-                  {isActiveSector && callState === "pending" && (
-                    <span className="absolute right-1 flex animate-pulse items-center gap-1 text-xs font-bold text-amber-400">
-                      <Phone size={14} />
-                      Llamando...
+                    <span
+                      className={`text-center text-2xl font-black leading-tight ${theme.textClass}`}
+                    >
+                      {ROLE_LABELS[role]}
                     </span>
-                  )}
-                </div>
 
-                <div className="flex min-h-0 flex-1 items-center justify-center gap-3 pb-2 sm:gap-5 sm:pb-3">
-                  <HabitacionCallButton
-                    label="Timbre"
-                    icon={<Bell size={28} strokeWidth={2.5} />}
-                    ringColor={theme.ringColor}
-                    visualState={buttonVisualState(role, "bell")}
-                    disabled={
-                      calling ||
-                      (hasActiveCall &&
-                        !(
-                          activeCall?.targetRole === role &&
-                          activeCall?.type === "bell"
-                        ))
-                    }
-                    onClick={() => void createCall("bell", role)}
-                  />
-                  <HabitacionCallButton
-                    label="Video"
-                    icon={<Video size={28} strokeWidth={2.5} />}
-                    ringColor={theme.ringColor}
-                    visualState={buttonVisualState(role, "video")}
-                    disabled={
-                      calling ||
-                      (hasActiveCall &&
-                        !(
-                          activeCall?.targetRole === role &&
-                          activeCall?.type === "video"
-                        ))
-                    }
-                    onClick={() => void createCall("video", role)}
-                  />
-                </div>
-              </section>
-            );
-          })}
+                    {isActiveSector && callState === "accepted" && (
+                      <span className="absolute right-2 flex items-center gap-1 text-xs font-bold text-[#5ee9b5]">
+                        <CheckCircle size={14} />
+                        <span className="hidden min-[600px]:inline">En atención · </span>
+                        {formatElapsed(callElapsed)}
+                      </span>
+                    )}
+                    {isActiveSector && callState === "pending" && (
+                      <span className="absolute right-2 flex animate-pulse items-center gap-1 text-xs font-bold text-[#ffd230]">
+                        <Phone size={14} />
+                        Llamando...
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="habitacion-call-row flex min-h-0 flex-1 items-center justify-center pb-3">
+                    <HabitacionCallButton
+                      label="Timbre"
+                      icon={<Bell size={28} strokeWidth={2.5} />}
+                      ringColor={theme.ringColor}
+                      visualState={buttonVisualState(role, "bell")}
+                      disabled={
+                        calling ||
+                        (hasActiveCall &&
+                          !(
+                            activeCall?.targetRole === role &&
+                            activeCall?.type === "bell"
+                          ))
+                      }
+                      onClick={() => void createCall("bell", role)}
+                    />
+                    <HabitacionCallButton
+                      label="Video"
+                      icon={<Video size={28} strokeWidth={2.5} />}
+                      ringColor={theme.ringColor}
+                      visualState={buttonVisualState(role, "video")}
+                      disabled={
+                        calling ||
+                        (hasActiveCall &&
+                          !(
+                            activeCall?.targetRole === role &&
+                            activeCall?.type === "video"
+                          ))
+                      }
+                      onClick={() => void createCall("video", role)}
+                    />
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+
+          <p
+            className="shrink-0 px-3 pt-3 pb-2 text-center text-base font-semibold"
+            style={{ color: HABITACION_MUTED }}
+          >
+            Presione un botón para llamar al sector que necesita
+          </p>
         </div>
 
         {hasActiveCall && !showVideoSession && (
