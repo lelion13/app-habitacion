@@ -22,7 +22,7 @@ export function HabitacionCallButton({
   onClick,
 }: HabitacionCallButtonProps) {
   const base =
-    "flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg font-black transition-all duration-150 select-none touch-manipulation sm:gap-1 sm:rounded-xl";
+    "habitacion-call-btn flex flex-col items-center justify-center gap-1 rounded-xl font-black transition-all duration-150 select-none touch-manipulation";
 
   if (visualState !== "idle") {
     const isConnected = visualState === "connected";
@@ -37,19 +37,19 @@ export function HabitacionCallButton({
       >
         {visualState === "calling" && (
           <span
-            className="absolute inset-0 animate-ping rounded-lg opacity-20 sm:rounded-xl"
+            className="absolute inset-0 animate-ping rounded-xl opacity-20"
             style={{ background: ringColor }}
           />
         )}
-        <span className="relative z-10 scale-90 sm:scale-100">{icon}</span>
-        <span className="relative z-10 text-xs sm:text-sm">{label}</span>
+        <span className="relative z-10">{icon}</span>
+        <span className="relative z-10 text-sm sm:text-base">{label}</span>
         {visualState === "calling" && (
-          <span className="relative z-10 text-[0.65rem] font-bold opacity-75 animate-pulse sm:text-xs">
+          <span className="relative z-10 text-xs font-bold opacity-75 animate-pulse">
             Llamando...
           </span>
         )}
         {isConnected && (
-          <span className="relative z-10 text-[0.65rem] font-bold text-emerald-400 sm:text-xs">
+          <span className="relative z-10 text-xs font-bold text-emerald-400">
             En atención
           </span>
         )}
@@ -69,8 +69,8 @@ export function HabitacionCallButton({
         color: disabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.9)",
       }}
     >
-      <span className="scale-90 sm:scale-100">{icon}</span>
-      <span className="text-xs sm:text-sm">{label}</span>
+      {icon}
+      <span className="text-sm sm:text-base">{label}</span>
     </button>
   );
 }

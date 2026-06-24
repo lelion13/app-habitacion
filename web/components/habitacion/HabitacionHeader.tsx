@@ -36,27 +36,27 @@ export function HabitacionHeader({ title, subtitle }: HabitacionHeaderProps) {
   });
 
   return (
-    <header className="flex shrink-0 items-start justify-between gap-2 px-3 pt-[max(0.35rem,env(safe-area-inset-top))] pb-1.5 sm:gap-3 sm:px-4">
-      <div className="flex min-w-0 flex-1 items-start gap-2 sm:gap-3">
+    <header className="flex shrink-0 items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
         <Image
           src={logoSrc}
           alt={logoAlt}
-          width={160}
-          height={48}
+          width={200}
+          height={56}
           priority
-          className="h-8 w-auto max-w-[30vw] shrink-0 object-contain sm:h-9"
+          className="h-11 w-auto max-w-[34vw] shrink-0 object-contain sm:h-14"
         />
         <div
-          className="hidden h-8 w-px shrink-0 sm:block"
+          className="hidden h-12 w-px shrink-0 sm:block"
           style={{ background: HABITACION_DIVIDER }}
           aria-hidden
         />
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-black leading-tight tracking-tight text-white sm:text-xl">
+          <h1 className="truncate text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl">
             {title}
           </h1>
           <p
-            className="truncate text-xs font-semibold sm:text-sm"
+            className="truncate text-sm font-semibold sm:text-base"
             style={{ color: HABITACION_MUTED }}
           >
             {subtitle}
@@ -65,11 +65,11 @@ export function HabitacionHeader({ title, subtitle }: HabitacionHeaderProps) {
       </div>
 
       <div className="shrink-0 text-right">
-        <p className="text-2xl font-black tabular-nums leading-none text-white sm:text-3xl">
+        <p className="text-3xl font-black tabular-nums leading-none text-white sm:text-4xl">
           {timeStr}
         </p>
         <p
-          className="mt-0.5 max-w-[9rem] text-[0.65rem] font-semibold capitalize leading-tight sm:max-w-none sm:text-xs"
+          className="mt-1 max-w-[10rem] text-xs font-semibold capitalize leading-tight sm:text-sm"
           style={{ color: HABITACION_MUTED }}
         >
           {dateStr}
