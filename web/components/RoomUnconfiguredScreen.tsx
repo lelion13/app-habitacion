@@ -7,7 +7,7 @@ export function RoomUnconfiguredScreen() {
 
   return (
     <main
-      className="flex min-h-screen flex-col items-center justify-center px-6 text-center"
+      className="flex h-full flex-col items-center justify-center px-6 text-center"
       style={{ background: HABITACION_BG, color: HABITACION_FG }}
     >
       <Image

@@ -22,7 +22,7 @@ export function HabitacionCallButton({
   onClick,
 }: HabitacionCallButtonProps) {
   const base =
-    "flex-1 flex flex-col items-center justify-center gap-2 rounded-xl font-black text-lg py-6 transition-all duration-150 select-none touch-manipulation";
+    "flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg font-black transition-all duration-150 select-none touch-manipulation sm:gap-1 sm:rounded-xl";
 
   if (visualState !== "idle") {
     const isConnected = visualState === "connected";
@@ -37,19 +37,19 @@ export function HabitacionCallButton({
       >
         {visualState === "calling" && (
           <span
-            className="absolute inset-0 animate-ping rounded-xl opacity-20"
+            className="absolute inset-0 animate-ping rounded-lg opacity-20 sm:rounded-xl"
             style={{ background: ringColor }}
           />
         )}
-        <span className="relative z-10">{icon}</span>
-        <span className="relative z-10 text-base">{label}</span>
+        <span className="relative z-10 scale-90 sm:scale-100">{icon}</span>
+        <span className="relative z-10 text-xs sm:text-sm">{label}</span>
         {visualState === "calling" && (
-          <span className="relative z-10 text-xs font-bold opacity-75 animate-pulse">
+          <span className="relative z-10 text-[0.65rem] font-bold opacity-75 animate-pulse sm:text-xs">
             Llamando...
           </span>
         )}
         {isConnected && (
-          <span className="relative z-10 text-xs font-bold text-emerald-400">
+          <span className="relative z-10 text-[0.65rem] font-bold text-emerald-400 sm:text-xs">
             En atención
           </span>
         )}
@@ -69,8 +69,8 @@ export function HabitacionCallButton({
         color: disabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.9)",
       }}
     >
-      {icon}
-      <span className="text-base">{label}</span>
+      <span className="scale-90 sm:scale-100">{icon}</span>
+      <span className="text-xs sm:text-sm">{label}</span>
     </button>
   );
 }

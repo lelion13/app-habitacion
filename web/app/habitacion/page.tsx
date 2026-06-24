@@ -56,7 +56,7 @@ export default function HabitacionPage() {
     <Suspense
       fallback={
         <main
-          className="flex min-h-screen items-center justify-center"
+          className="flex h-full items-center justify-center"
           style={{ background: HABITACION_BG, color: HABITACION_MUTED }}
         >
           <p className="font-semibold">Cargando habitación…</p>

@@ -33,6 +33,8 @@ For `/habitacion` only:
 
 Dynamic manifest `background_color` and `theme_color` MUST be `#0d1b2a` for room installs.
 
+The main call UI MUST fit within the device viewport (`100dvh`) without horizontal or vertical scrolling: header, helper text, three sector rows, and cancel action (when visible) SHALL be visible together; sector rows MUST share remaining height equally (`flex-1` / `min-h-0`).
+
 ### REQ-UI-010: Componente video compartido
 
 `VideoCallSession` MUST accept optional `shellVariant="habitacion"` for room overlay styling aligned with habitacion theme. Staff dashboard MUST keep default shell.

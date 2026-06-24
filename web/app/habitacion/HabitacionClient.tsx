@@ -55,7 +55,7 @@ function formatElapsed(seconds: number) {
 function HabitacionLoading() {
   return (
     <main
-      className="flex min-h-screen items-center justify-center"
+      className="flex h-full items-center justify-center"
       style={{ background: HABITACION_BG, color: HABITACION_MUTED }}
     >
       <p className="font-semibold">Cargando habitación…</p>
@@ -242,7 +242,7 @@ export function HabitacionClient() {
 
   return (
     <main
-      className="flex min-h-screen flex-col"
+      className="flex h-full flex-col overflow-hidden"
       style={{ background: HABITACION_BG, color: HABITACION_FG }}
     >
       {showVideoSession && room && (
@@ -257,35 +257,41 @@ export function HabitacionClient() {
         />
       )}
 
-      <div className={showVideoSession ? "hidden" : "flex min-h-screen flex-col"}>
+      <div
+        className={
+          showVideoSession
+            ? "hidden"
+            : "flex h-full min-h-0 flex-col overflow-hidden"
+        }
+      >
         <HabitacionHeader
           title={room!.label}
           subtitle={`Piso ${room!.floor} · Sector ${room!.sector}`}
         />
 
-        <div className="mx-6 h-px" style={{ background: HABITACION_BORDER }} />
+        <div className="mx-3 h-px shrink-0 sm:mx-4" style={{ background: HABITACION_BORDER }} />
 
         <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
 
         <p
-          className="px-6 py-3 text-center text-base font-semibold"
+          className="shrink-0 px-3 py-1 text-center text-xs font-semibold sm:px-4 sm:text-sm"
           style={{ color: HABITACION_MUTED }}
         >
           Presione un botón para llamar al sector que necesita
         </p>
 
         {error && (
-          <p className="mx-4 mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <p className="mx-3 mb-1 shrink-0 truncate rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-300 sm:text-sm">
             {error}
           </p>
         )}
         {lastCall && !hasActiveCall && (
-          <p className="mx-4 mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">
+          <p className="mx-3 mb-1 shrink-0 truncate rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 sm:text-sm">
             {lastCall}
           </p>
         )}
 
-        <div className="flex flex-1 flex-col gap-4 px-4 pb-28">
+        <div className="flex min-h-0 flex-1 flex-col gap-1.5 px-2 pb-1 sm:gap-2 sm:px-3">
           {ROLES.map((role) => {
             const theme = ROLE_THEME[role];
             const isActiveSector = activeCall?.targetRole === role;
@@ -294,36 +300,42 @@ export function HabitacionClient() {
             return (
               <section
                 key={role}
-                className={`rounded-2xl border transition-all duration-300 ${theme.bgClass} ${theme.borderClass} ${
+                className={`flex min-h-0 flex-1 flex-col rounded-xl border transition-all duration-300 sm:rounded-2xl ${theme.bgClass} ${theme.borderClass} ${
                   isActiveSector ? theme.activeBgClass : ""
                 }`}
               >
-                <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-                  <span className={`text-3xl leading-none ${theme.textClass}`} aria-hidden>
+                <div className="flex shrink-0 items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2">
+                  <span
+                    className={`text-xl leading-none sm:text-2xl ${theme.textClass}`}
+                    aria-hidden
+                  >
                     {theme.icon}
                   </span>
-                  <span className={`text-xl font-black ${theme.textClass}`}>
+                  <span
+                    className={`min-w-0 truncate text-sm font-black sm:text-base ${theme.textClass}`}
+                  >
                     {ROLE_LABELS[role]}
                   </span>
 
                   {isActiveSector && callState === "accepted" && (
-                    <span className="ml-auto flex items-center gap-1.5 text-sm font-bold text-emerald-400">
-                      <CheckCircle size={16} />
-                      En atención · {formatElapsed(callElapsed)}
+                    <span className="ml-auto flex shrink-0 items-center gap-1 text-[0.65rem] font-bold text-emerald-400 sm:text-xs">
+                      <CheckCircle size={14} />
+                      <span className="hidden sm:inline">En atención · </span>
+                      {formatElapsed(callElapsed)}
                     </span>
                   )}
                   {isActiveSector && callState === "pending" && (
-                    <span className="ml-auto flex animate-pulse items-center gap-1.5 text-sm font-bold text-amber-400">
-                      <Phone size={16} />
+                    <span className="ml-auto flex shrink-0 animate-pulse items-center gap-1 text-[0.65rem] font-bold text-amber-400 sm:text-xs">
+                      <Phone size={14} />
                       Llamando...
                     </span>
                   )}
                 </div>
 
-                <div className="flex gap-3 px-4 pb-5">
+                <div className="flex min-h-0 flex-1 gap-2 px-2 pb-2 sm:gap-3 sm:px-3 sm:pb-3">
                   <HabitacionCallButton
                     label="Timbre"
-                    icon={<Bell size={28} strokeWidth={2.5} />}
+                    icon={<Bell size={22} strokeWidth={2.5} className="sm:h-7 sm:w-7" />}
                     ringColor={theme.ringColor}
                     visualState={buttonVisualState(role, "bell")}
                     disabled={
@@ -338,7 +350,7 @@ export function HabitacionClient() {
                   />
                   <HabitacionCallButton
                     label="Video"
-                    icon={<Video size={28} strokeWidth={2.5} />}
+                    icon={<Video size={22} strokeWidth={2.5} className="sm:h-7 sm:w-7" />}
                     ringColor={theme.ringColor}
                     visualState={buttonVisualState(role, "video")}
                     disabled={
@@ -358,18 +370,18 @@ export function HabitacionClient() {
         </div>
 
         {hasActiveCall && !showVideoSession && (
-          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+          <footer className="shrink-0 px-3 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4">
             <button
               type="button"
               onClick={() => void cancelActiveCall()}
               disabled={cancelling}
-              className="flex items-center gap-3 rounded-2xl px-8 py-4 text-lg font-black text-white shadow-2xl transition-all duration-150 active:scale-95 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-black text-white shadow-lg transition-all duration-150 active:scale-[0.98] disabled:opacity-50 sm:rounded-2xl sm:py-3 sm:text-base"
               style={{ background: "#ef4444" }}
             >
-              <X size={22} strokeWidth={3} />
+              <X size={20} strokeWidth={3} />
               {cancelling ? "Cancelando…" : "Cancelar llamada"}
             </button>
-          </div>
+          </footer>
         )}
       </div>
     </main>

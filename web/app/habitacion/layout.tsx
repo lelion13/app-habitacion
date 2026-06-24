@@ -1,5 +1,6 @@
 import { Nunito } from "next/font/google";
 import type { Viewport } from "next";
+import "./habitacion.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -15,5 +16,7 @@ export default function HabitacionLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className={`${nunito.className} min-h-screen`}>{children}</div>;
+  return (
+    <div className={`habitacion-root ${nunito.className}`}>{children}</div>
+  );
 }

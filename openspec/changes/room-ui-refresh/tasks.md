@@ -7,3 +7,4 @@
 - [x] Nunito in `habitacion/layout.tsx`; manifest colors `#0d1b2a`
 - [x] Install `lucide-react`
 - [x] Build + lint + manual tablet check (build OK; manual pendiente en tablet)
+- [x] Viewport-fit: `100dvh`, sectores flex-1, sin scroll horizontal/vertical

@@ -57,41 +57,40 @@ export function InstallRoomBanner({
 
   return (
     <div
-      className="mx-4 mb-4 rounded-2xl border px-4 py-3"
+      className="mx-3 mb-1 shrink-0 rounded-xl border px-3 py-2"
       style={{
         borderColor: "rgba(56,189,248,0.3)",
         background: "rgba(56,189,248,0.08)",
       }}
     >
-      <p className="text-sm font-semibold text-sky-100">
-        Instale la app en esta tablet para abrirla a pantalla completa desde el
-        inicio. El icono debe llamarse «{iconName}».
+      <p className="text-xs font-semibold leading-snug text-sky-100 sm:text-sm">
+        Instale la app en esta tablet (icono «{iconName}») para pantalla completa.
       </p>
       {installEvent && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           <button
             type="button"
             disabled={installing}
             onClick={() => void handleInstall()}
-            className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-bold text-white hover:bg-sky-400 disabled:opacity-50"
+            className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-400 disabled:opacity-50 sm:text-sm"
           >
-            {installing ? "Instalando…" : "Instalar en esta tablet"}
+            {installing ? "Instalando…" : "Instalar"}
           </button>
           <button
             type="button"
             onClick={() => setHidden(true)}
-            className="rounded-lg border px-4 py-2 text-sm font-semibold text-sky-100 hover:bg-white/5"
+            className="rounded-lg border px-3 py-1.5 text-xs font-semibold text-sky-100 hover:bg-white/5 sm:text-sm"
             style={{ borderColor: HABITACION_BORDER }}
           >
             Ahora no
           </button>
         </div>
       )}
-      <p className="mt-3 text-xs leading-relaxed" style={{ color: HABITACION_MUTED }}>
-        Si no aparece el botón de instalar: abra el menú ⋮ de Chrome y elija
-        «Instalar aplicación» o «Agregar a la pantalla principal». Use siempre
-        el enlace con clave de esta habitación.
-      </p>
+      {!installEvent && (
+        <p className="mt-1 text-[0.65rem] leading-snug sm:text-xs" style={{ color: HABITACION_MUTED }}>
+          Menú ⋮ → Instalar aplicación
+        </p>
+      )}
     </div>
   );
 }
