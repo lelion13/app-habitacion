@@ -304,34 +304,6 @@ export function HabitacionClient() {
                   isActiveSector ? theme.activeBgClass : ""
                 }`}
               >
-                <div className="flex shrink-0 items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2">
-                  <span
-                    className={`text-xl leading-none sm:text-2xl ${theme.textClass}`}
-                    aria-hidden
-                  >
-                    {theme.icon}
-                  </span>
-                  <span
-                    className={`min-w-0 truncate text-sm font-black sm:text-base ${theme.textClass}`}
-                  >
-                    {ROLE_LABELS[role]}
-                  </span>
-
-                  {isActiveSector && callState === "accepted" && (
-                    <span className="ml-auto flex shrink-0 items-center gap-1 text-[0.65rem] font-bold text-emerald-400 sm:text-xs">
-                      <CheckCircle size={14} />
-                      <span className="hidden sm:inline">En atención · </span>
-                      {formatElapsed(callElapsed)}
-                    </span>
-                  )}
-                  {isActiveSector && callState === "pending" && (
-                    <span className="ml-auto flex shrink-0 animate-pulse items-center gap-1 text-[0.65rem] font-bold text-amber-400 sm:text-xs">
-                      <Phone size={14} />
-                      Llamando...
-                    </span>
-                  )}
-                </div>
-
                 <div className="flex min-h-0 flex-1 gap-2 px-2 pb-2 sm:gap-3 sm:px-3 sm:pb-3">
                   <HabitacionCallButton
                     label="Timbre"
@@ -348,6 +320,36 @@ export function HabitacionClient() {
                     }
                     onClick={() => void createCall("bell", role)}
                   />
+
+                  <div className="flex w-[5.5rem] shrink-0 flex-col items-center justify-center gap-0.5 px-0.5 text-center sm:w-36">
+                    <span
+                      className={`text-2xl leading-none sm:text-3xl ${theme.textClass}`}
+                      aria-hidden
+                    >
+                      {theme.icon}
+                    </span>
+                    <span
+                      className={`text-base font-black leading-tight sm:text-lg ${theme.textClass}`}
+                    >
+                      {ROLE_LABELS[role]}
+                    </span>
+                    {isActiveSector && callState === "accepted" && (
+                      <span className="flex flex-col items-center gap-0.5 text-[0.65rem] font-bold leading-tight text-emerald-400 sm:text-xs">
+                        <span className="flex items-center gap-1">
+                          <CheckCircle size={14} />
+                          En atención
+                        </span>
+                        <span>{formatElapsed(callElapsed)}</span>
+                      </span>
+                    )}
+                    {isActiveSector && callState === "pending" && (
+                      <span className="flex animate-pulse items-center gap-1 text-[0.65rem] font-bold text-amber-400 sm:text-xs">
+                        <Phone size={14} />
+                        Llamando...
+                      </span>
+                    )}
+                  </div>
+
                   <HabitacionCallButton
                     label="Video"
                     icon={<Video size={22} strokeWidth={2.5} className="sm:h-7 sm:w-7" />}
