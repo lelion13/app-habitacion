@@ -21,28 +21,31 @@
 
 ## Fase 4 — Install + navegación
 
-- [x] 4.1 `InstallRoomBanner.tsx` — `beforeinstallprompt`
+- [x] 4.1 `InstallRoomBanner.tsx` — `beforeinstallprompt` + instrucciones menú
 - [x] 4.2 `StandaloneRoomGuard.tsx` — redirect `/` y `/dashboard` en standalone
 - [x] 4.3 Integrar en layouts/pages afectados
+- [x] 4.4 Service worker + manifest server-side + fullscreen (`0f1497b`)
+- [x] 4.5 Ocultar banner si PWA instalada (`388b000`)
 
-## Fase 5 — Docs
+## Fase 5 — Docs + branding
 
 - [x] 5.1 `README.md` — flujo instalar tablet
 - [x] 5.2 `docs/runbook.md` — alta tablet + troubleshooting
-- [x] 5.3 `docs/quick-map.md` — mencionar change activo
+- [x] 5.3 `docs/quick-map.md` — change archivado
+- [x] 5.4 Logo institucional (`InstitutionBrand`, `d6eeaaa`)
 
 ## Fase 6 — Verificación
 
 - [x] 6.1 `npm run test:unit` + `npm run build`
 - [x] 6.2 Playwright: habitacion con key sigue OK
-- [ ] 6.3 Manual Chrome Android: instalar → abrir ícono → habitación correcta
-- [ ] 6.4 Manual: standalone redirect desde `/`
-- [ ] 6.5 `verify-report.md`
+- [x] 6.3 Manual Chrome Android: instalar → abrir ícono → habitación correcta
+- [x] 6.4 Manual: fullscreen + nombre ícono
+- [x] 6.5 `verify-report.md`
 
 ## Fase 7 — Cierre SDD
 
-- [ ] 7.1 Fusionar deltas → `openspec/specs/`
-- [ ] 7.2 Archivar change
+- [x] 7.1 Fusionar deltas → `openspec/specs/`
+- [x] 7.2 Archivar change
 
 ## Dependencias
 
@@ -50,4 +53,4 @@
 1 → 2 → 3 → 4 → 5 → 6 → 7
 ```
 
-Estimación: **1 sesión** implementación + **1 verificación manual** en tablet.
+Estimación: **1 sesión** implementación + **1 verificación manual** en tablet — **completado 2026-06-22**.

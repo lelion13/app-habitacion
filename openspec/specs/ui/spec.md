@@ -8,17 +8,27 @@ Route `/` MUST offer navigation to `/habitacion` and `/dashboard/login`.
 ### REQ-UI-002: PWA habitación
 Route `/habitacion` MUST:
 - Read `key` from URL search params (`?key={roomKey}`) in production
+- Fall back to persisted `roomKey` in `localStorage` when launch URL has no query (installed PWA)
 - Display room label, floor, sector
 - Show large buttons for bell/video per target role
 - Block new calls while an active call exists
 - Show active call banner with cancel action
 - Subscribe to room SSE for status updates
-- Expose `manifest.json` for Android install
+- Expose dynamic manifest for Android install when room is validated
+- MUST NOT provide UI for end user to type or change `roomKey`
+- Register a minimal service worker (`/sw.js`) for Chrome installability
+- Serve room-specific manifest link in initial HTML when `?key=` is present (`generateMetadata`)
 
 #### Scenario: Sin key en URL
-- **GIVEN** no `key` param and no server env fallback
+- **GIVEN** no `key` param and no valid stored `roomKey`
 - **WHEN** page loads
-- **THEN** UI SHALL show clear error instructing to open `/habitacion?key={roomKey}`
+- **THEN** UI SHALL show fixed support screen (contact technical support)
+- **AND** MUST NOT show `/habitacion?key=` example to end user
+
+#### Scenario: PWA instalada abre habitación correcta
+- **GIVEN** tablet installed from `/habitacion?key=room-101-key`
+- **WHEN** user opens app from home screen
+- **THEN** room 101 UI SHALL load without user entering a key
 
 #### Scenario: Video aceptado en habitación
 - **GIVEN** active call `{ type: "video", status: "accepted" }`
@@ -83,14 +93,24 @@ During an active video session, both room and staff clients MUST use the same la
 The UI MUST follow microprompt guidelines:
 - Light background, dark text (video overlay: dark fullscreen)
 - Accent `#0d9488`
-- No photographic images; CSS/SVG icons only
+- No decorative photographic images; CSS/SVG icons for actions; institution logo MAY appear in header (`InstitutionBrand`)
 - Mobile-first responsive layout
 
 ### REQ-UI-007: Protección rutas dashboard
 Dashboard routes (except login) MUST redirect unauthenticated users to `/dashboard/login` via layout guard (not Next.js middleware).
 
 ### REQ-UI-008: PWA manifest prod
-`start_url` in manifest MAY remain `/habitacion`; deployed tablets SHOULD use pinned shortcut with full `?key=` URL per device.
+Production tablets MUST install via Chrome Android from the room-specific URL.
+
+The dynamic manifest `GET /api/manifest?key={roomKey}` MUST include:
+- `start_url` with `?key={roomKey}`
+- `name` / `short_name` from room `label`
+- `display: fullscreen` (with `display_override`)
+- PNG icons 192×192 and 512×512
+
+`web/public/manifest.json` MAY remain as generic fallback for non-room routes.
+
+Server-rendered `/habitacion?key=` MUST link the dynamic manifest in initial HTML (not only client-side).
 
 ### REQ-UI-009: URL pública prod
 `NEXT_PUBLIC_APP_URL` in production MUST be `https://habitacion.lionapp.cloud`.
@@ -143,6 +163,38 @@ The dashboard MUST expose Telegram notification settings for authenticated staff
 #### Scenario: Mobile-friendly
 - Link open MUST work on phone (primary use case for Telegram)
 
+### REQ-UI-017: Banner instalar PWA
+
+When room is loaded and browser supports install:
+
+#### Scenario: Banner en Chrome Android
+- **GIVEN** valid room loaded, not installed/standalone, `beforeinstallprompt` fired
+- **WHEN** user views `/habitacion`
+- **THEN** UI SHALL show discrete banner **Instalar en esta tablet**
+- **AND** tapping it SHALL trigger native install prompt
+- **AND** UI MAY show Chrome menu instructions when native prompt is unavailable
+
+#### Scenario: Ya instalada
+- **GIVEN** PWA launched from home screen (standalone/fullscreen detection)
+- **WHEN** user views `/habitacion`
+- **THEN** install banner MUST NOT show
+
+### REQ-UI-018: Navegación restringida en PWA standalone
+
+#### Scenario: Redirect desde landing
+- **GIVEN** PWA launched in standalone/fullscreen mode with stored `roomKey`
+- **WHEN** user navigates to `/`, `/dashboard`, or `/estadisticas`
+- **THEN** client MUST redirect to `/habitacion` with resolved room
+
+#### Scenario: Nombre del ícono
+- **GIVEN** room label `Habitación 101`
+- **WHEN** manifest is generated for that room
+- **THEN** `name` SHALL reflect room label (`short_name` MAY truncate)
+
+### REQ-UI-019: Branding institucional
+
+Room tablet UI, dashboard login, and unconfigured screen MUST show institution logo via `InstitutionBrand` (default `public/branding/clinicamg-logo.png`; overridable via `NEXT_PUBLIC_INSTITUTION_LOGO_URL`).
+
 ## Audio (bell)
 
 - Implementation: Web Audio API via `lib/bell.ts`
@@ -152,8 +204,9 @@ The dashboard MUST expose Telegram notification settings for authenticated staff
 
 | Item | Priority | Spec domain |
 |------|----------|-------------|
+| Modo kiosko — salir solo con PIN soporte | Medium | ui |
 | TURN server (NAT estricto) | High | calls + deploy |
-| Service worker offline | Medium | ui |
+| Service worker offline / cache | Medium | ui |
 | Admin CRUD rooms/users | Medium | rooms + auth |
 | Notificaciones push (FCM) | Low | realtime |
 | Notificaciones Telegram inline buttons | Low | calls + ui |
@@ -162,6 +215,6 @@ The dashboard MUST expose Telegram notification settings for authenticated staff
 
 | Type | Scope |
 |------|-------|
-| Jest | `lib/auth`, `lib/validation`, `lib/calls`, `lib/bell`, `lib/webrtc-signal`, `lib/telegram` |
+| Jest | `lib/auth`, `lib/validation`, `lib/calls`, `lib/bell`, `lib/webrtc-signal`, `lib/telegram`, `lib/room-bind`, `lib/room-manifest` |
 | Playwright | Landing, login page, habitacion load |
 | Manual | Bell audio, SSE, PWA install, video bidireccional prod |

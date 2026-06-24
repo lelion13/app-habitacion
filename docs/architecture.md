@@ -1,6 +1,6 @@
 # Arquitectura — App Habitación
 
-Estado documentado: **prod operativo** (2026-06-22) — baseline MVP + deploy Hostinger + WebRTC + alertas Telegram.
+Estado documentado: **prod operativo** (2026-06-22) — baseline MVP + deploy Hostinger + WebRTC + alertas Telegram + **PWA tablet por habitación**.
 
 ## Vista general
 
@@ -102,6 +102,21 @@ Requiere **Activar escucha** en dashboard (misma zona/rol que el llamado). Ver [
 
 Implementación: `lib/telegram.ts`, `lib/telegram-link.ts`, `lib/telegram-recipients.ts`.
 
+## PWA tablet (habitación fija)
+
+Cada tablet Android se instala desde `/habitacion?key={roomKey}`:
+
+1. `GET /api/manifest?key=` — manifest con `start_url`, `name`, `display: fullscreen`
+2. `generateMetadata` en `/habitacion` — manifest en HTML inicial
+3. `localStorage` (`app_habitacion_room_key`) — habitación tras validar API
+4. `/sw.js` — service worker mínimo (installability Chrome)
+5. `StandaloneRoomGuard` — redirect `/`, `/dashboard`, `/estadisticas` en PWA instalada
+6. `InstitutionBrand` — logo institucional en habitación, login, pantalla soporte
+
+**Backlog:** PIN kiosko (`kiosk-exit-pin`).
+
+Implementación: `lib/room-bind.ts`, `lib/room-manifest.ts`, `components/InstallRoomBanner.tsx`, `components/StandaloneRoomGuard.tsx`, `app/api/manifest/route.ts`.
+
 ## Decisiones de arquitectura (ADR)
 
 | ID | Decisión | Alternativa descartada | Motivo |
@@ -119,6 +134,9 @@ Implementación: `lib/telegram.ts`, `lib/telegram-link.ts`, `lib/telegram-recipi
 | ADR-V04 | STUN público sin TURN v1 | TURN self-hosted | Menos ops; backlog si NAT falla |
 | ADR-T01 | Telegram DM a staff vinculado | Grupo/canal por piso | Privacidad; match escucha activa |
 | ADR-T02 | Webhook + deep link one-time | Login OAuth Telegram | Menos superficie; staff ya usa JWT |
+| ADR-P01 | Manifest dinámico + localStorage | Build por habitación | Un GHCR, N tablets |
+| ADR-P02 | Manifest/SW en HTML inicial | Solo client-side link | Instalación Chrome Android fiable |
+| ADR-P03 | Redirect standalone en cliente | Kiosk OS lock | Suficiente v1; PIN en backlog |
 
 ## Estructura de código
 
@@ -129,11 +147,14 @@ web/
 │   │   ├── calls/[id]/signal/   # WebRTC signaling
 │   │   ├── staff/telegram/      # Vinculación cuenta
 │   │   └── telegram/webhook/    # Bot updates
-│   ├── habitacion/              # PWA + overlay video
+│   ├── habitacion/              # PWA + overlay video + room bind
 │   └── dashboard/
 │       └── video/[callId]/      # Staff video
 ├── components/
-│   └── VideoCallSession.tsx     # WebRTC compartido
+│   ├── VideoCallSession.tsx     # WebRTC compartido
+│   ├── InstallRoomBanner.tsx
+│   ├── StandaloneRoomGuard.tsx
+│   └── InstitutionBrand.tsx
 ├── lib/
 │   ├── db.ts
 │   ├── auth.ts
@@ -145,7 +166,9 @@ web/
 │   ├── signal-buffer.ts
 │   ├── telegram.ts
 │   ├── telegram-link.ts
-│   └── telegram-recipients.ts
+│   ├── telegram-recipients.ts
+│   ├── room-bind.ts
+│   └── room-manifest.ts
 └── context/
     └── AppContext.tsx
 ```
@@ -168,5 +191,6 @@ Ver [docs/deploy-hostinger.md](./deploy-hostinger.md).
 | TURN server (NAT estricto) | Alta |
 | SSE horizontal scaling (Redis) | Media |
 | Admin CRUD habitaciones/usuarios | Media |
+| Modo kiosko / PIN salida PWA | Media |
 | Service Worker offline | Baja |
 | Botones inline Telegram en mensajes | Baja |

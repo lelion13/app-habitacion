@@ -1,0 +1,12 @@
+change: pwa-tablet-room-bind
+status: archived
+phase: complete
+created: 2026-06-22
+archived: 2026-06-22
+domains:
+  - rooms
+  - ui
+requirement: |
+  PWA Android instalable por habitación: persistir roomKey al instalar,
+  manifest dinámico, nombre por habitación, fullscreen, branding institucional.
+  Sin reconfiguración por usuario. PIN kiosko fuera de scope (backlog).

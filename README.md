@@ -56,12 +56,14 @@ Deploy: ver [docs/deploy-hostinger.md](./docs/deploy-hostinger.md).
 
 1. En Chrome Android, abrir la URL de la habitación, por ejemplo:
    `https://habitacion.lionapp.cloud/habitacion?key=room-101-key`
-2. Verificar que carga la habitación correcta.
-3. Usar el banner **Instalar en esta tablet** o menú → Instalar aplicación.
-4. Al abrir el ícono, la app recuerda la habitación (manifest dinámico + almacenamiento local).
+2. Verificar que carga la habitación correcta (logo institucional arriba).
+3. Usar el banner **Instalar en esta tablet** o menú ⋮ → **Instalar aplicación** (preferir instalar app, no solo acceso directo).
+4. Al abrir el ícono: nombre = label de habitación, **fullscreen** sin barra del navegador, habitación recordada (`localStorage` + manifest dinámico).
 5. Si la tablet no está configurada, muestra *Contacte a soporte técnico* (sin campo editable).
 
-Una URL por tablet; la key no es modificable por el usuario final.
+Una URL por tablet; la key no es modificable por el usuario final. Tras cambios de PWA en prod, **reinstalar** desde el link con `?key=`.
+
+**Backlog:** PIN kiosko para salir de la app (`kiosk-exit-pin`).
 
 ## Tests
 

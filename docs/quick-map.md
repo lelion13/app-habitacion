@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-22):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram operativos.
+**Estado actual (2026-06-22):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + **PWA tablet por habitación** operativos.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -19,6 +19,8 @@ Guía rápida para orientarse en el repo y en SDD.
 |------|------|
 | App Next.js | `web/` |
 | PWA habitación | `web/app/habitacion/` |
+| Room bind / manifest PWA | `web/lib/room-bind.ts`, `web/lib/room-manifest.ts`, `web/app/api/manifest/` |
+| Branding institución | `web/components/InstitutionBrand.tsx`, `web/public/branding/` |
 | Dashboard | `web/app/dashboard/` |
 | Videollamada staff | `web/app/dashboard/video/[callId]/` |
 | API | `web/app/api/` |
@@ -49,12 +51,12 @@ Guía rápida para orientarse en el repo y en SDD.
 | [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
 | [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar |
 | [telegram-staff-alerts](../openspec/changes/archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram si escucha activa + vinculado |
+| [pwa-tablet-room-bind](../openspec/changes/archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, manifest dinámico, fullscreen |
 
 ## Changes activos
 
 | Change | Resumen |
 |--------|---------|
-| [pwa-tablet-room-bind](../openspec/changes/pwa-tablet-room-bind/) | PWA tablet con habitación fija al instalar |
 | [call-alerts-and-history](../openspec/changes/call-alerts-and-history/) | Alerta persistente + historial `/estadisticas` |
 
 ## Docs operativos

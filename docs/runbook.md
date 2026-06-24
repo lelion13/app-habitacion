@@ -81,12 +81,15 @@ Orden recomendado: staff abre video **antes** o **después** de habitación — 
 ## Alta tablet Android (PWA)
 
 1. Chrome → `https://habitacion.lionapp.cloud/habitacion?key=room-XXX-key`
-2. Confirmar habitación correcta en pantalla
-3. Banner **Instalar en esta tablet** o menú → Instalar aplicación
+2. Confirmar habitación correcta en pantalla (logo + label)
+3. Banner **Instalar en esta tablet** o menú ⋮ → **Instalar aplicación**
 4. Abrir ícono (nombre = label de habitación, ej. Habitación 101)
-5. Debe cargar sin pedir key
+5. Debe cargar en **fullscreen** sin pedir key
+6. El banner de instalación **no** debe verse dentro de la app ya instalada
 
 Si muestra *Dispositivo no configurado*: reinstalar desde el link con `?key=` correcto o borrar datos de la app en Android.
+
+Tras deploy de cambios PWA: eliminar ícono anterior y reinstalar desde URL con key.
 
 ## Problemas frecuentes
 
@@ -94,6 +97,7 @@ Si muestra *Dispositivo no configurado*: reinstalar desde el link con `?key=` co
 |---------|----------------|--------|
 | Habitación no encontrada | Seed no ejecutado o `key` incorrecta | Seed dev; revisar `?key=` |
 | PWA abre sin habitación | Instaló sin visitar URL con key | Reinstalar desde link `?key=room-XXX-key` |
+| Cartel “Instalar…” en app instalada | Detección standalone (Android) | Cerrar app; actualizar a `388b000+`; reabrir desde ícono |
 | Dispositivo no configurado | Sin key en URL ni storage | Flujo alta tablet arriba |
 | Llamado activo bloqueado | Call `pending`/`accepted` en BD | Cancelar desde habitación |
 | Dashboard sin sonido | Autoplay del navegador | **Probar timbre** / **Activar escucha** |
