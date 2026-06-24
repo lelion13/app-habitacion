@@ -58,17 +58,19 @@ export function HabitacionHeader({ title, subtitle }: HabitacionHeaderProps) {
           <p className="mt-1 text-sm font-semibold" style={{ color: HABITACION_MUTED }}>
             {subtitle}
           </p>
-          <p
-            className="mt-0.5 text-sm font-semibold capitalize"
-            style={{ color: HABITACION_MUTED }}
-          >
-            {dateStr}
-          </p>
         </div>
       </div>
-      <p className="shrink-0 text-4xl font-black tabular-nums leading-none text-white">
-        {timeStr}
-      </p>
+      <div className="shrink-0 text-right">
+        <p className="text-4xl font-black tabular-nums leading-none text-white">
+          {timeStr}
+        </p>
+        <p
+          className="mt-1 text-sm font-semibold capitalize"
+          style={{ color: HABITACION_MUTED }}
+        >
+          {dateStr}
+        </p>
+      </div>
     </header>
   );
 }
