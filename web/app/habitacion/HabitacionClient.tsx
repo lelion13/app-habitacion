@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Bell, Video, X, Phone, CheckCircle } from "lucide-react";
 import type { StaffRole, CallType } from "@/lib/types";
 import { ROLE_LABELS, CALL_TYPE_LABELS } from "@/lib/types";
-import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
-import { PageHeader } from "@/components/PageHeader";
 import { VideoCallSession } from "@/components/VideoCallSession";
 import { InstallRoomBanner } from "@/components/InstallRoomBanner";
 import { RoomUnconfiguredScreen } from "@/components/RoomUnconfiguredScreen";
+import { HabitacionHeader } from "@/components/habitacion/HabitacionHeader";
+import { HabitacionCallButton } from "@/components/habitacion/HabitacionCallButton";
+import {
+  HABITACION_BG,
+  HABITACION_BORDER,
+  HABITACION_FG,
+  HABITACION_MUTED,
+  ROLE_THEME,
+} from "@/lib/habitacion-theme";
 import {
   clearStoredRoomKey,
   markPwaInstalled,
@@ -34,10 +42,26 @@ interface ActiveCall {
   status: string;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Esperando respuesta",
-  accepted: "En atención",
-};
+const ROLES: StaffRole[] = ["nurse", "quality", "doctor"];
+
+function formatElapsed(seconds: number) {
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (seconds % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function HabitacionLoading() {
+  return (
+    <main
+      className="flex min-h-screen items-center justify-center"
+      style={{ background: HABITACION_BG, color: HABITACION_MUTED }}
+    >
+      <p className="font-semibold">Cargando habitación…</p>
+    </main>
+  );
+}
 
 export function HabitacionClient() {
   const searchParams = useSearchParams();
@@ -52,11 +76,9 @@ export function HabitacionClient() {
   const [calling, setCalling] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [lastCall, setLastCall] = useState<string | null>(null);
+  const [callElapsed, setCallElapsed] = useState(0);
 
-  const roomQuery = useMemo(
-    () => (roomKey ? `?key=${encodeURIComponent(roomKey)}` : ""),
-    [roomKey],
-  );
+  const roomQuery = roomKey ? `?key=${encodeURIComponent(roomKey)}` : "";
 
   useEffect(() => {
     registerServiceWorker();
@@ -146,6 +168,17 @@ export function HabitacionClient() {
     return () => source.close();
   }, [room]);
 
+  useEffect(() => {
+    if (!activeCall) {
+      setCallElapsed(0);
+      return;
+    }
+
+    setCallElapsed(0);
+    const id = window.setInterval(() => setCallElapsed((s) => s + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [activeCall?.id, activeCall?.status]);
+
   async function createCall(type: CallType, targetRole: StaffRole) {
     if (activeCall || !roomKey) return;
     setCalling(true);
@@ -189,25 +222,29 @@ export function HabitacionClient() {
     }
   }
 
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50">
-        <p className="text-slate-600">Cargando habitación…</p>
-      </main>
-    );
-  }
+  if (loading) return <HabitacionLoading />;
+  if (unconfigured) return <RoomUnconfiguredScreen />;
 
-  if (unconfigured) {
-    return <RoomUnconfiguredScreen />;
-  }
-
-  const roles: StaffRole[] = ["nurse", "quality", "doctor"];
   const hasActiveCall = activeCall !== null;
   const showVideoSession =
     activeCall?.type === "video" && activeCall.status === "accepted";
 
+  function buttonVisualState(
+    role: StaffRole,
+    type: CallType,
+  ): "idle" | "calling" | "connected" {
+    if (!activeCall || activeCall.targetRole !== role || activeCall.type !== type) {
+      return "idle";
+    }
+    if (activeCall.status === "accepted") return "connected";
+    return "calling";
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-teal-50 to-white px-4 py-8">
+    <main
+      className="flex min-h-screen flex-col"
+      style={{ background: HABITACION_BG, color: HABITACION_FG }}
+    >
       {showVideoSession && room && (
         <VideoCallSession
           callId={activeCall.id}
@@ -215,89 +252,125 @@ export function HabitacionClient() {
           roomKey={roomKey}
           roomId={room.id}
           fullscreen
+          shellVariant="habitacion"
           onEnded={() => setActiveCall(null)}
         />
       )}
 
-      <div className={`mx-auto max-w-lg ${showVideoSession ? "hidden" : ""}`}>
-        <PageHeader
-          showInstitutionLogo
+      <div className={showVideoSession ? "hidden" : "flex min-h-screen flex-col"}>
+        <HabitacionHeader
           title={room!.label}
           subtitle={`Piso ${room!.floor} · Sector ${room!.sector}`}
         />
 
+        <div className="mx-6 h-px" style={{ background: HABITACION_BORDER }} />
+
         <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
 
-        {activeCall && (
-          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <div className="flex items-start gap-3">
-              <CallTypeIcon type={activeCall.type} />
-              <div className="flex-1">
-                <p className="font-semibold text-amber-900">Llamado activo</p>
-                <p className="text-sm text-amber-800">
-                  {CALL_TYPE_LABELS[activeCall.type]} a{" "}
-                  {ROLE_LABELS[activeCall.targetRole]} ·{" "}
-                  {STATUS_LABELS[activeCall.status] ?? activeCall.status}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={cancelActiveCall}
-              disabled={cancelling}
-              className="mt-3 w-full rounded-lg border border-amber-300 bg-white py-2.5 text-sm font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-50"
-            >
-              {cancelling ? "Cancelando…" : "Cancelar llamado"}
-            </button>
-          </div>
-        )}
+        <p
+          className="px-6 py-3 text-center text-base font-semibold"
+          style={{ color: HABITACION_MUTED }}
+        >
+          Presione un botón para llamar al sector que necesita
+        </p>
 
         {error && (
-          <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="mx-4 mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
             {error}
           </p>
         )}
         {lastCall && !hasActiveCall && (
-          <p className="mb-4 rounded-lg bg-teal-50 px-4 py-3 text-sm font-medium text-teal-800">
+          <p className="mx-4 mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">
             {lastCall}
           </p>
         )}
 
-        <div className="space-y-6">
-          {roles.map((role) => (
-            <section
-              key={role}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-            >
-              <div className="mb-4 flex items-center gap-3">
-                <RoleIcon role={role} size="lg" />
-                <h2 className="text-xl font-bold text-slate-900">
-                  {ROLE_LABELS[role]}
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  disabled={calling || hasActiveCall}
-                  onClick={() => createCall("bell", role)}
-                  className="flex flex-col items-center gap-2 rounded-xl bg-orange-500 px-4 py-6 text-white transition hover:bg-orange-600 disabled:opacity-50"
-                >
-                  <CallTypeIcon type="bell" />
-                  <span className="font-semibold">Timbre</span>
-                </button>
-                <button
-                  type="button"
-                  disabled={calling || hasActiveCall}
-                  onClick={() => createCall("video", role)}
-                  className="flex flex-col items-center gap-2 rounded-xl bg-violet-600 px-4 py-6 text-white transition hover:bg-violet-700 disabled:opacity-50"
-                >
-                  <CallTypeIcon type="video" />
-                  <span className="font-semibold">Video</span>
-                </button>
-              </div>
-            </section>
-          ))}
+        <div className="flex flex-1 flex-col gap-4 px-4 pb-28">
+          {ROLES.map((role) => {
+            const theme = ROLE_THEME[role];
+            const isActiveSector = activeCall?.targetRole === role;
+            const callState = isActiveSector ? activeCall?.status : null;
+
+            return (
+              <section
+                key={role}
+                className={`rounded-2xl border transition-all duration-300 ${theme.bgClass} ${theme.borderClass} ${
+                  isActiveSector ? theme.activeBgClass : ""
+                }`}
+              >
+                <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+                  <span className={`text-3xl leading-none ${theme.textClass}`} aria-hidden>
+                    {theme.icon}
+                  </span>
+                  <span className={`text-xl font-black ${theme.textClass}`}>
+                    {ROLE_LABELS[role]}
+                  </span>
+
+                  {isActiveSector && callState === "accepted" && (
+                    <span className="ml-auto flex items-center gap-1.5 text-sm font-bold text-emerald-400">
+                      <CheckCircle size={16} />
+                      En atención · {formatElapsed(callElapsed)}
+                    </span>
+                  )}
+                  {isActiveSector && callState === "pending" && (
+                    <span className="ml-auto flex animate-pulse items-center gap-1.5 text-sm font-bold text-amber-400">
+                      <Phone size={16} />
+                      Llamando...
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex gap-3 px-4 pb-5">
+                  <HabitacionCallButton
+                    label="Timbre"
+                    icon={<Bell size={28} strokeWidth={2.5} />}
+                    ringColor={theme.ringColor}
+                    visualState={buttonVisualState(role, "bell")}
+                    disabled={
+                      calling ||
+                      (hasActiveCall &&
+                        !(
+                          activeCall?.targetRole === role &&
+                          activeCall?.type === "bell"
+                        ))
+                    }
+                    onClick={() => void createCall("bell", role)}
+                  />
+                  <HabitacionCallButton
+                    label="Video"
+                    icon={<Video size={28} strokeWidth={2.5} />}
+                    ringColor={theme.ringColor}
+                    visualState={buttonVisualState(role, "video")}
+                    disabled={
+                      calling ||
+                      (hasActiveCall &&
+                        !(
+                          activeCall?.targetRole === role &&
+                          activeCall?.type === "video"
+                        ))
+                    }
+                    onClick={() => void createCall("video", role)}
+                  />
+                </div>
+              </section>
+            );
+          })}
         </div>
+
+        {hasActiveCall && !showVideoSession && (
+          <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+            <button
+              type="button"
+              onClick={() => void cancelActiveCall()}
+              disabled={cancelling}
+              className="flex items-center gap-3 rounded-2xl px-8 py-4 text-lg font-black text-white shadow-2xl transition-all duration-150 active:scale-95 disabled:opacity-50"
+              style={{ background: "#ef4444" }}
+            >
+              <X size={22} strokeWidth={3} />
+              {cancelling ? "Cancelando…" : "Cancelar llamada"}
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

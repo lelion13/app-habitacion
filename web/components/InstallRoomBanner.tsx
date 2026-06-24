@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useIsStandalonePwa } from "@/lib/use-is-standalone-pwa";
+import { HABITACION_BORDER, HABITACION_MUTED } from "@/lib/habitacion-theme";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -55,8 +56,14 @@ export function InstallRoomBanner({
   const iconName = roomLabel ?? "esta habitación";
 
   return (
-    <div className="mb-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3">
-      <p className="text-sm font-medium text-sky-950">
+    <div
+      className="mx-4 mb-4 rounded-2xl border px-4 py-3"
+      style={{
+        borderColor: "rgba(56,189,248,0.3)",
+        background: "rgba(56,189,248,0.08)",
+      }}
+    >
+      <p className="text-sm font-semibold text-sky-100">
         Instale la app en esta tablet para abrirla a pantalla completa desde el
         inicio. El icono debe llamarse «{iconName}».
       </p>
@@ -66,20 +73,21 @@ export function InstallRoomBanner({
             type="button"
             disabled={installing}
             onClick={() => void handleInstall()}
-            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-50"
+            className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-bold text-white hover:bg-sky-400 disabled:opacity-50"
           >
             {installing ? "Instalando…" : "Instalar en esta tablet"}
           </button>
           <button
             type="button"
             onClick={() => setHidden(true)}
-            className="rounded-lg border border-sky-300 px-4 py-2 text-sm font-medium text-sky-900 hover:bg-sky-100"
+            className="rounded-lg border px-4 py-2 text-sm font-semibold text-sky-100 hover:bg-white/5"
+            style={{ borderColor: HABITACION_BORDER }}
           >
             Ahora no
           </button>
         </div>
       )}
-      <p className="mt-3 text-xs leading-relaxed text-sky-900/80">
+      <p className="mt-3 text-xs leading-relaxed" style={{ color: HABITACION_MUTED }}>
         Si no aparece el botón de instalar: abra el menú ⋮ de Chrome y elija
         «Instalar aplicación» o «Agregar a la pantalla principal». Use siempre
         el enlace con clave de esta habitación.

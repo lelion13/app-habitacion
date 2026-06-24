@@ -2,7 +2,9 @@
 
 ## Activos
 
-_Ninguno — todos los changes implementados están en [archive/](./archive/)._
+| Change | Estado | Resumen |
+|--------|--------|---------|
+| [room-ui-refresh](./room-ui-refresh/) | Implementado (pendiente verificación manual) | UI oscura habitación según Figma Make |
 
 ---
 

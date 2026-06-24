@@ -1,13 +1,25 @@
-import { InstitutionBrand } from "@/components/InstitutionBrand";
+import Image from "next/image";
+import { getInstitutionBrand } from "@/lib/institution-branding";
+import { HABITACION_BG, HABITACION_FG, HABITACION_MUTED } from "@/lib/habitacion-theme";
 
 export function RoomUnconfiguredScreen() {
+  const { logoSrc, logoAlt } = getInstitutionBrand();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
-      <InstitutionBrand className="mb-8" />
-      <p className="text-xl font-semibold text-slate-900">
-        Dispositivo no configurado
-      </p>
-      <p className="mt-3 max-w-sm text-base text-slate-600">
+    <main
+      className="flex min-h-screen flex-col items-center justify-center px-6 text-center"
+      style={{ background: HABITACION_BG, color: HABITACION_FG }}
+    >
+      <Image
+        src={logoSrc}
+        alt={logoAlt}
+        width={320}
+        height={48}
+        priority
+        className="mb-8 h-12 w-auto object-contain"
+      />
+      <p className="text-xl font-black text-white">Dispositivo no configurado</p>
+      <p className="mt-3 max-w-sm text-base font-semibold" style={{ color: HABITACION_MUTED }}>
         Contacte a soporte técnico para activar esta tablet.
       </p>
     </main>

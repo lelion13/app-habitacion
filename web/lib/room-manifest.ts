@@ -24,8 +24,8 @@ export function buildRoomManifest({ roomKey, label, number }: RoomManifestInput)
     scope: "/",
     display: "fullscreen",
     display_override: ["fullscreen", "standalone"],
-    background_color: "#f8fafc",
-    theme_color: "#0d9488",
+    background_color: "#0d1b2a",
+    theme_color: "#0d1b2a",
     orientation: "portrait",
     icons: [...PWA_ICONS],
   };

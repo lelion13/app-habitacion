@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { HabitacionClient } from "./HabitacionClient";
 import { getRoomByKey } from "@/lib/get-room-by-key";
 import { manifestShortName } from "@/lib/room-manifest";
+import { HABITACION_BG, HABITACION_MUTED } from "@/lib/habitacion-theme";
 
 type PageProps = {
   searchParams: Promise<{ key?: string | string[] }>;
@@ -54,8 +55,11 @@ export default function HabitacionPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-slate-50">
-          <p className="text-slate-600">Cargando habitación…</p>
+        <main
+          className="flex min-h-screen items-center justify-center"
+          style={{ background: HABITACION_BG, color: HABITACION_MUTED }}
+        >
+          <p className="font-semibold">Cargando habitación…</p>
         </main>
       }
     >

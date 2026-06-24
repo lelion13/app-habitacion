@@ -10,8 +10,14 @@ import {
   createPeerConnection,
   stopMediaStream,
 } from "@/lib/webrtc";
+import {
+  HABITACION_BG,
+  HABITACION_BORDER,
+  HABITACION_MUTED,
+} from "@/lib/habitacion-theme";
 
 type ConnectionState = "idle" | "connecting" | "connected" | "error";
+type ShellVariant = "default" | "habitacion";
 
 interface VideoCallSessionProps {
   callId: string;
@@ -22,6 +28,7 @@ interface VideoCallSessionProps {
   roomId?: string;
   fullscreen?: boolean;
   autoStart?: boolean;
+  shellVariant?: ShellVariant;
   onEnded?: () => void;
 }
 
@@ -38,6 +45,7 @@ export function VideoCallSession({
   roomId,
   fullscreen = false,
   autoStart = false,
+  shellVariant = "default",
   onEnded,
 }: VideoCallSessionProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -377,18 +385,41 @@ export function VideoCallSession({
           ? (error ?? "Error de conexión")
           : "Listo para iniciar";
 
+  const isHabitacion = shellVariant === "habitacion";
   const shellClass = fullscreen
-    ? "fixed inset-0 z-50 flex flex-col bg-slate-950 text-white"
-    : "flex min-h-dvh flex-col bg-slate-950 text-white";
+    ? "fixed inset-0 z-50 flex flex-col text-white"
+    : "flex min-h-dvh flex-col text-white";
+  const shellStyle = {
+    ...(fullscreen ? { height: "100dvh" } : {}),
+    background: isHabitacion ? HABITACION_BG : undefined,
+  };
+  const primaryBtnClass = isHabitacion
+    ? "rounded-2xl bg-sky-500 px-6 py-4 text-lg font-black text-white hover:bg-sky-400"
+    : "rounded-xl bg-violet-600 px-6 py-4 text-lg font-semibold text-white hover:bg-violet-700";
+  const secondaryBtnClass = isHabitacion
+    ? "rounded-2xl border px-6 py-3 font-bold text-white hover:bg-white/5"
+    : "rounded-xl bg-slate-700 px-6 py-3 font-semibold text-white hover:bg-slate-600";
+  const headerClass = isHabitacion
+    ? "shrink-0 border-b px-4 py-3 text-center text-sm font-semibold"
+    : "shrink-0 border-b border-slate-800 px-4 py-2 text-center text-sm text-slate-300";
+  const footerClass = isHabitacion
+    ? "shrink-0 border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+    : "shrink-0 border-t border-slate-800 bg-slate-950 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]";
+  const endBtnClass = isHabitacion
+    ? "min-h-12 w-full rounded-2xl text-base font-black text-white hover:opacity-90 disabled:opacity-50"
+    : "min-h-12 w-full rounded-xl bg-red-600 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50";
 
   return (
-    <div className={shellClass} style={fullscreen ? { height: "100dvh" } : undefined}>
+    <div
+      className={`${shellClass} ${isHabitacion ? "" : "bg-slate-950"}`}
+      style={shellStyle}
+    >
       {!started && role === "room" && !error && (
         <div className="flex flex-1 flex-col items-center justify-center px-4">
           <button
             type="button"
             onClick={() => void startSession()}
-            className="rounded-xl bg-violet-600 px-6 py-4 text-lg font-semibold text-white hover:bg-violet-700"
+            className={primaryBtnClass}
           >
             Iniciar videollamada
           </button>
@@ -402,7 +433,12 @@ export function VideoCallSession({
             <button
               type="button"
               onClick={() => onEnded()}
-              className="rounded-xl bg-slate-700 px-6 py-3 font-semibold text-white hover:bg-slate-600"
+              className={secondaryBtnClass}
+              style={
+                isHabitacion
+                  ? { borderColor: HABITACION_BORDER, background: "rgba(255,255,255,0.06)" }
+                  : undefined
+              }
             >
               Volver al dashboard
             </button>
@@ -411,7 +447,7 @@ export function VideoCallSession({
             <button
               type="button"
               onClick={() => void startSession()}
-              className="rounded-xl bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-700"
+              className={primaryBtnClass}
             >
               Reintentar
             </button>
@@ -421,7 +457,14 @@ export function VideoCallSession({
 
       {started && (
         <>
-          <header className="shrink-0 border-b border-slate-800 px-4 py-2 text-center text-sm text-slate-300">
+          <header
+            className={headerClass}
+            style={
+              isHabitacion
+                ? { borderColor: HABITACION_BORDER, color: HABITACION_MUTED }
+                : undefined
+            }
+          >
             {statusLabel}
           </header>
 
@@ -449,12 +492,20 @@ export function VideoCallSession({
             </div>
           </div>
 
-          <footer className="shrink-0 border-t border-slate-800 bg-slate-950 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <footer
+            className={footerClass}
+            style={
+              isHabitacion
+                ? { borderColor: HABITACION_BORDER, background: HABITACION_BG }
+                : undefined
+            }
+          >
             <button
               type="button"
               onClick={() => void endCall()}
               disabled={ending}
-              className="min-h-12 w-full rounded-xl bg-red-600 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              className={endBtnClass}
+              style={isHabitacion ? { background: "#ef4444" } : undefined}
             >
               {ending ? "Finalizando…" : "Finalizar llamada"}
             </button>
