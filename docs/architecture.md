@@ -1,6 +1,6 @@
 # Arquitectura — App Habitación
 
-Estado documentado: **prod operativo** (2026-06-22) — baseline MVP + deploy Hostinger + WebRTC + alertas Telegram + **PWA tablet por habitación**.
+Estado documentado: **prod operativo** (2026-06-22) — baseline MVP + deploy Hostinger + WebRTC + alertas Telegram + PWA tablet + **alerta persistente + historial**.
 
 ## Vista general
 
@@ -117,6 +117,14 @@ Cada tablet Android se instala desde `/habitacion?key={roomKey}`:
 
 Implementación: `lib/room-bind.ts`, `lib/room-manifest.ts`, `components/InstallRoomBanner.tsx`, `components/StandaloneRoomGuard.tsx`, `app/api/manifest/route.ts`.
 
+## Alerta persistente + historial
+
+**Alerta dashboard:** `lib/bell.ts` — `startAlertLoop` / `syncAlertLoop` repiten timbre o tono video mientras haya `pending` que coincidan con escucha activa. SSE `call:new` / `call:updated` y poll 4 s re-sincronizan estado.
+
+**Métricas:** `lib/call-metrics.ts` persiste `responseTimeMs`, `totalDurationMs`, `sessionDurationMs` en transiciones PATCH.
+
+**Historial:** `GET /api/calls/history` (JWT) + UI `/estadisticas` con filtros, KPIs y paginación (`lib/call-history.ts`).
+
 ## Decisiones de arquitectura (ADR)
 
 | ID | Decisión | Alternativa descartada | Motivo |
@@ -137,6 +145,8 @@ Implementación: `lib/room-bind.ts`, `lib/room-manifest.ts`, `components/Install
 | ADR-P01 | Manifest dinámico + localStorage | Build por habitación | Un GHCR, N tablets |
 | ADR-P02 | Manifest/SW en HTML inicial | Solo client-side link | Instalación Chrome Android fiable |
 | ADR-P03 | Redirect standalone en cliente | Kiosk OS lock | Suficiente v1; PIN en backlog |
+| ADR-H01 | Métricas en backend al transicionar | Cálculo solo en UI | Fuente de verdad para `/estadisticas` |
+| ADR-H02 | Alert loop cliente (SSE + poll) | Push server-side repeat | Sin cambios API; respeta unlock audio |
 
 ## Estructura de código
 
@@ -148,6 +158,7 @@ web/
 │   │   ├── staff/telegram/      # Vinculación cuenta
 │   │   └── telegram/webhook/    # Bot updates
 │   ├── habitacion/              # PWA + overlay video + room bind
+│   ├── estadisticas/            # Historial y KPIs staff
 │   └── dashboard/
 │       └── video/[callId]/      # Staff video
 ├── components/
@@ -168,7 +179,9 @@ web/
 │   ├── telegram-link.ts
 │   ├── telegram-recipients.ts
 │   ├── room-bind.ts
-│   └── room-manifest.ts
+│   ├── room-manifest.ts
+│   ├── call-metrics.ts
+│   └── call-history.ts
 └── context/
     └── AppContext.tsx
 ```

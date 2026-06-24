@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-22):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + **PWA tablet por habitación** operativos.
+**Estado actual (2026-06-22):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + PWA tablet por habitación + **alerta persistente + historial `/estadisticas`** operativos.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -22,6 +22,9 @@ Guía rápida para orientarse en el repo y en SDD.
 | Room bind / manifest PWA | `web/lib/room-bind.ts`, `web/lib/room-manifest.ts`, `web/app/api/manifest/` |
 | Branding institución | `web/components/InstitutionBrand.tsx`, `web/public/branding/` |
 | Dashboard | `web/app/dashboard/` |
+| Estadísticas / historial | `web/app/estadisticas/`, `web/app/api/calls/history/` |
+| Métricas llamados | `web/lib/call-metrics.ts`, `web/lib/call-history.ts` |
+| Alerta persistente | `web/lib/bell.ts` (`startAlertLoop`, `playVideoAlert`) |
 | Videollamada staff | `web/app/dashboard/video/[callId]/` |
 | API | `web/app/api/` |
 | Signaling WebRTC | `web/app/api/calls/[id]/signal/` |
@@ -52,12 +55,11 @@ Guía rápida para orientarse en el repo y en SDD.
 | [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar |
 | [telegram-staff-alerts](../openspec/changes/archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram si escucha activa + vinculado |
 | [pwa-tablet-room-bind](../openspec/changes/archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, manifest dinámico, fullscreen |
+| [call-alerts-and-history](../openspec/changes/archive/2026-06-22-call-alerts-and-history/) | 2026-06-22 | Alerta persistente bell/video + historial `/estadisticas` |
 
 ## Changes activos
 
-| Change | Resumen |
-|--------|---------|
-| [call-alerts-and-history](../openspec/changes/call-alerts-and-history/) | Alerta persistente + historial `/estadisticas` |
+_Ninguno — todos los changes implementados están archivados._
 
 ## Docs operativos
 

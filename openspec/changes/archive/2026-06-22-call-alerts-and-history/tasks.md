@@ -13,7 +13,7 @@
 - [x] 2.2 Crear `lib/call-metrics.ts` + tests unitarios
 - [x] 2.3 PATCH `[id]/route.ts` — persistir métricas en accept/complete/cancel
 - [x] 2.4 PATCH `room/route.ts` — métricas en cancel
-- [ ] 2.5 Índices Mongo (documentar en runbook o script seed)
+- [x] 2.5 Índices Mongo (documentados en `docs/runbook.md`)
 
 ## Fase 3 — API historial
 
@@ -37,13 +37,21 @@
 
 ## Fase 6 — Verificación
 
-- [ ] 6.1 Manual: timbre pending repite hasta atender o cancel
-- [ ] 6.2 Manual: video pending repite con tono distinto
-- [ ] 6.3 Manual: `/estadisticas` KPIs + filtros
+- [x] 6.1 Manual: timbre pending repite hasta atender o cancel
+- [x] 6.2 Manual: video pending repite con tono distinto
+- [x] 6.3 Manual: `/estadisticas` KPIs + filtros
 - [x] 6.4 `npm run test:unit` + `npm run build`
-- [ ] 6.5 Completar `verify-report.md`
+- [x] 6.5 Completar `verify-report.md`
 
 ## Fase 7 — Cierre SDD
 
-- [ ] 7.1 Fusionar deltas → `openspec/specs/`
-- [ ] 7.2 Archivar change
+- [x] 7.1 Fusionar deltas → `openspec/specs/`
+- [x] 7.2 Archivar change
+
+## Dependencias
+
+```
+1 → 2 → 3 → 4 → 5 → 6 → 7
+```
+
+Completado: **2026-06-22**.

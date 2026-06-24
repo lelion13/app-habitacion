@@ -1,8 +1,0 @@
-change: call-alerts-and-history
-status: implemented
-phase: verify
-created: 2026-06-19
-domains:
-  - calls
-  - realtime
-  - ui

@@ -37,6 +37,8 @@ data: {json}
 ### REQ-RT-004: Resiliencia dashboard
 The dashboard SHOULD poll `/api/calls` every 4 seconds as fallback when in-memory SSE bus is reset (dev hot reload).
 
+Poll results MUST be used to synchronize **active call list** and **alert loop state**.
+
 ### REQ-RT-005: Evento webrtc:signal
 The SSE bus MUST emit `webrtc:signal` to relay WebRTC signaling payloads.
 
@@ -52,6 +54,28 @@ The SSE bus MUST emit `webrtc:signal` to relay WebRTC signaling payloads.
 
 ### REQ-RT-006: Orden y recovery
 Signaling events SHOULD be processed in arrival order. Clients MUST poll GET `/api/calls/{id}/signal` every 2s until connected as fallback.
+
+### REQ-RT-007: Disparadores de alerta cliente
+
+Staff dashboard alert loop MUST react to SSE events without requiring new server events.
+
+| Event | Client action |
+|-------|---------------|
+| `call:new` (pending) | Ensure alert loop running for matching listen config |
+| `call:updated` (terminal) | Re-evaluate pending set; stop loop if empty |
+| `call:updated` (accepted) | Re-evaluate; stop loop for that call (no longer pending) |
+
+Poll fallback (`GET /api/calls` every 4s) MUST also drive alert state on reconnect.
+
+#### Scenario: SSE call:new video
+- **GIVEN** staff subscribed on matching channel
+- **WHEN** `call:new` with `{ type: "video", status: "pending" }`
+- **THEN** client SHALL start or continue video alert pattern
+
+#### Scenario: Reconexión SSE
+- **GIVEN** SSE disconnected briefly
+- **WHEN** poll returns pending calls
+- **THEN** alert loop MUST resume if audio unlocked
 
 ## Limitations (documented)
 

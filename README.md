@@ -40,6 +40,7 @@ Claves habitación demo: `room-101-key`, `room-102-key`, `room-201-key`
 | `/dashboard/login` | Login personal |
 | `/dashboard` | Escucha y atención de llamados |
 | `/dashboard/video/[callId]` | Videollamada staff (WebRTC) |
+| `/estadisticas` | Historial y KPIs de llamados (staff JWT) |
 
 ## Producción
 

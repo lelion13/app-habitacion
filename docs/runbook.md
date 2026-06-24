@@ -91,6 +91,27 @@ Si muestra *Dispositivo no configurado*: reinstalar desde el link con `?key=` co
 
 Tras deploy de cambios PWA: eliminar ícono anterior y reinstalar desde URL con key.
 
+## Dashboard — alerta persistente
+
+1. En `/dashboard`, **Activar escucha** (desbloquea audio).
+2. Llamado `pending` timbre o video en la zona/rol configurados → alerta **repite** cada ~6 s.
+3. Video pending usa tono distinto (`playVideoAlert`).
+4. La alerta **para** al aceptar, completar o cancelar (si no quedan otros `pending`).
+
+## Estadísticas (`/estadisticas`)
+
+Requiere login staff. Filtros por fechas, piso, sector, rol, habitación, tipo y estado. KPIs + tabla paginada con métricas (`responseTimeMs`, `totalDurationMs`, `sessionDurationMs`).
+
+## Índices Mongo (historial)
+
+Recomendados en colección `calls` (ejecutar una vez en prod si el volumen crece):
+
+```javascript
+db.calls.createIndex({ createdAt: -1 })
+db.calls.createIndex({ floor: 1, sector: 1, targetRole: 1 })
+db.calls.createIndex({ status: 1 })
+```
+
 ## Problemas frecuentes
 
 | Síntoma | Causa probable | Acción |
@@ -101,6 +122,8 @@ Tras deploy de cambios PWA: eliminar ícono anterior y reinstalar desde URL con 
 | Dispositivo no configurado | Sin key en URL ni storage | Flujo alta tablet arriba |
 | Llamado activo bloqueado | Call `pending`/`accepted` en BD | Cancelar desde habitación |
 | Dashboard sin sonido | Autoplay del navegador | **Probar timbre** / **Activar escucha** |
+| Alerta no repite | Audio no desbloqueado | Activar escucha; revisar indicador en dashboard |
+| `/estadisticas` vacío | Sin llamados en rango de fechas | Ampliar filtro de fechas (default 7 días) |
 | SSE sin eventos (dev) | Hot reload reinicia bus | Recargar dashboard |
 | Solo cámara local, "Conectando…" | Bug SSE signaling (pre `32d5a69`) | Hard refresh; verificar imagen GHCR actual |
 | Video no conecta tras 15s | NAT/firewall hospital | Backlog TURN; probar misma red WiFi |

@@ -1,0 +1,12 @@
+change: call-alerts-and-history
+status: archived
+phase: complete
+created: 2026-06-19
+archived: 2026-06-22
+domains:
+  - calls
+  - realtime
+  - ui
+requirement: |
+  Alerta sonora persistente (bell + video) en dashboard hasta atención;
+  historial de llamados con métricas en Mongo y pantalla /estadisticas.
