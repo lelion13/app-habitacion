@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { hasAtLeastRole } from "@/lib/system-roles";
 
 export default function DashboardLayout({
   children,
@@ -14,6 +15,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const isLogin = pathname === "/dashboard/login";
+  const canViewStats = hasAtLeastRole(user?.systemRole ?? "user", "supervisor");
 
   useEffect(() => {
     if (!loading && !user && !isLogin) {
@@ -47,12 +49,14 @@ export default function DashboardLayout({
             >
               Escucha
             </Link>
-            <Link
-              href="/estadisticas"
-              className="text-sm font-medium text-teal-700 hover:text-teal-900"
-            >
-              Estadísticas
-            </Link>
+            {canViewStats && (
+              <Link
+                href="/estadisticas"
+                className="text-sm font-medium text-teal-700 hover:text-teal-900"
+              >
+                Estadísticas
+              </Link>
+            )}
           </div>
           <button
             type="button"

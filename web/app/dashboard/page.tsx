@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { PageHeader } from "@/components/PageHeader";
+import { hasAtLeastRole } from "@/lib/system-roles";
 import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
 import {
   playBell,
@@ -33,7 +34,7 @@ interface SerializedCall {
 }
 
 export default function DashboardPage() {
-  const { token, listenConfig, saveListenConfig } = useApp();
+  const { token, listenConfig, saveListenConfig, user } = useApp();
   const [floor, setFloor] = useState(listenConfig?.floor ?? "1");
   const [sector, setSector] = useState(listenConfig?.sector ?? "A");
   const [role, setRole] = useState<StaffRole>(listenConfig?.role ?? "nurse");
@@ -260,6 +261,8 @@ export default function DashboardPage() {
 
   const roles: StaffRole[] = ["nurse", "quality", "doctor"];
   const alertKind = resolveAlertKind(pendingForListen);
+  const canViewStats = hasAtLeastRole(user?.systemRole ?? "user", "supervisor");
+  const isAdmin = user?.systemRole === "admin";
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -271,6 +274,27 @@ export default function DashboardPage() {
             : "Configure dónde escuchar"
         }
       />
+
+      {(isAdmin || canViewStats) && (
+        <div className="mb-6 flex flex-wrap gap-3">
+          {isAdmin && (
+            <Link
+              href="/dashboard/admin"
+              className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-900 hover:bg-teal-100"
+            >
+              Administración →
+            </Link>
+          )}
+          {canViewStats && (
+            <Link
+              href="/estadisticas"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              Estadísticas e historial →
+            </Link>
+          )}
+        </div>
+      )}
 
       {!audioReady && pendingForListen.length > 0 && (
         <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
@@ -400,15 +424,6 @@ export default function DashboardPage() {
           {error}
         </p>
       )}
-
-      <p className="mb-6">
-        <Link
-          href="/estadisticas"
-          className="text-sm font-medium text-teal-700 hover:text-teal-900 hover:underline"
-        >
-          Ver estadísticas e historial →
-        </Link>
-      </p>
 
       {!listenConfig ? (
         <p className="text-slate-600">

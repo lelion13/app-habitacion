@@ -1,0 +1,10 @@
+change: room-ui-refresh
+status: archived
+phase: complete
+created: 2026-06-19
+archived: 2026-06-19
+domains:
+  - ui
+requirement: |
+  UI oscura tablet /habitacion según Figma: Nunito, sectores por rol,
+  viewport 100dvh sin scroll, modales/toasts para llamadas sin desplazar layout.

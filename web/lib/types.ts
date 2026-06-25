@@ -1,16 +1,40 @@
 import type { ObjectId } from "mongodb";
 
 export type StaffRole = "nurse" | "quality" | "doctor";
+export type SystemRole = "user" | "supervisor" | "admin";
 export type CallType = "bell" | "video";
 export type CallStatus = "pending" | "accepted" | "completed" | "cancelled";
+
+export interface Floor {
+  _id?: ObjectId;
+  name: string;
+  label: string;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Sector {
+  _id?: ObjectId;
+  code: string;
+  label: string;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface Room {
   _id?: ObjectId;
   number: string;
+  floorId?: ObjectId;
+  sectorId?: ObjectId;
   floor: string;
   sector: string;
   roomKey: string;
   label: string;
+  active: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface User {
@@ -18,7 +42,10 @@ export interface User {
   email: string;
   passwordHash: string;
   name: string;
+  systemRole: SystemRole;
+  active: boolean;
   createdAt: Date;
+  updatedAt?: Date;
   telegramChatId?: string;
   telegramUsername?: string;
   telegramLinkedAt?: Date;
@@ -77,6 +104,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  systemRole: SystemRole;
 }
 
 export const ROLE_LABELS: Record<StaffRole, string> = {
@@ -85,7 +113,21 @@ export const ROLE_LABELS: Record<StaffRole, string> = {
   doctor: "Médico",
 };
 
+export const SYSTEM_ROLE_LABELS: Record<SystemRole, string> = {
+  user: "Usuario",
+  supervisor: "Supervisor",
+  admin: "Administrador",
+};
+
 export const CALL_TYPE_LABELS: Record<CallType, string> = {
   bell: "Timbre",
   video: "Videollamada",
 };
+
+export function isUserActive(user: Pick<User, "active">): boolean {
+  return user.active !== false;
+}
+
+export function isRoomActive(room: Pick<Room, "active">): boolean {
+  return room.active !== false;
+}

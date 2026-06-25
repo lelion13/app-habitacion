@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { runAdminMigrations } from "@/lib/admin-migrate";
 import { resolveRoomKey } from "@/lib/room-key";
 import type { Room } from "@/lib/types";
+import { isRoomActive } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
   const roomKey = resolveRoomKey(
@@ -18,6 +20,7 @@ export async function GET(request: NextRequest) {
   }
 
   const db = await getDb();
+  await runAdminMigrations(db);
   const room = await db.collection<Room>("rooms").findOne({ roomKey });
 
   if (!room) {
@@ -33,5 +36,6 @@ export async function GET(request: NextRequest) {
     floor: room.floor,
     sector: room.sector,
     label: room.label,
+    active: isRoomActive(room),
   });
 }

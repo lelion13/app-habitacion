@@ -9,15 +9,34 @@ Route `/` MUST offer navigation to `/habitacion` and `/dashboard/login`.
 Route `/habitacion` MUST:
 - Read `key` from URL search params (`?key={roomKey}`) in production
 - Fall back to persisted `roomKey` in `localStorage` when launch URL has no query (installed PWA)
-- Display room label, floor, sector
-- Show large buttons for bell/video per target role
+- Use a **dark habitacion theme** (`#0d1b2a` background, Nunito typography) scoped to the habitacion route
+- Display room label, floor, sector in header with institution logo and live clock (time top-right; localized date below time, right-aligned)
+- Show helper text at bottom of main content: «Presione un botón para llamar al sector que necesita»
+- Render three horizontal sector rows (Enfermería, Asistente de calidad, Médico) with role-colored accents
+- Use Timbre/Video buttons (300×100px, dark bordered style, lucide icons)
 - Block new calls while an active call exists
-- Show active call banner with cancel action
+- Show **modal overlay** for active call management (pending bell/video, accepted bell) — MUST NOT use inline footer or banners that shift layout
+- Show fixed-position toasts for errors and post-call confirmations (MUST NOT expand header flex area)
 - Subscribe to room SSE for status updates
 - Expose dynamic manifest for Android install when room is validated
 - MUST NOT provide UI for end user to type or change `roomKey`
 - Register a minimal service worker (`/sw.js`) for Chrome installability
 - Serve room-specific manifest link in initial HTML when `?key=` is present (`generateMetadata`)
+
+Loading and unconfigured states MUST use the same dark theme and institution logo.
+
+The main call UI MUST fit within `100dvh` without horizontal or vertical scrolling: header, three sector rows, and helper text SHALL be visible together; sector rows MUST share remaining height equally (`flex-1` / `min-h-0`).
+
+#### Scenario: Reloj visible
+- **GIVEN** room loaded successfully
+- **WHEN** user views `/habitacion`
+- **THEN** current time MUST update every second in the header
+
+#### Scenario: Llamada activa sin desplazar layout
+- **GIVEN** an active call (pending or accepted bell, or pending video before overlay)
+- **WHEN** user views `/habitacion`
+- **THEN** sector rows and header MUST retain fixed proportions
+- **AND** cancel/finalize action MUST appear in a modal overlay (not a document footer)
 
 #### Scenario: Sin key en URL
 - **GIVEN** no `key` param and no valid stored `roomKey`
@@ -98,7 +117,9 @@ During an active video session, both room and staff clients MUST use the same la
 1. **Video stage** — centered, maximum width constrained (`max-w-5xl`), fixed **16:9 aspect ratio** container
 2. **Remote stream** — MUST render with `object-fit: contain` inside the 16:9 container (no stretching distortion)
 3. **Local stream** — MUST render as PiP overlay inside the video stage (corner), MAY use `object-fit: cover`
-4. **Viewport fit** — the 16:9 container MUST NOT exceed `calc(100dvh - footer - header)` so the full UI fits without page scroll
+4. **Viewport fit** — the 16:9 container MUST NOT exceed available viewport height so the full UI fits without page scroll
+
+**Habitación (`shellVariant="habitacion"`):** end-call control MUST use a **fixed floating trigger** + confirmation modal overlay. MUST NOT use a flex footer bar that reduces video stage height.
 
 #### Scenario: Resolución remota distinta
 - **GIVEN** remote device sends 4:3 video and local container is 16:9
@@ -106,18 +127,30 @@ During an active video session, both room and staff clients MUST use the same la
 - **THEN** remote video SHALL show letterboxing (no aspect distortion)
 - **AND** container size SHALL remain defined by layout CSS, not by stream dimensions
 
-#### Scenario: Footer siempre visible
-- **GIVEN** an active video session (`started === true`)
-- **WHEN** user views dashboard or room overlay
+#### Scenario: Footer siempre visible (dashboard)
+- **GIVEN** an active video session on **staff** dashboard (`shellVariant` default)
+- **WHEN** user views `/dashboard/video/[callId]`
 - **THEN** a fixed bottom bar MUST remain visible with at least one primary action to end the call
 - **AND** the bar MUST respect `safe-area-inset-bottom` on mobile/PWA
 
+#### Scenario: Modal finalizar (habitación)
+- **GIVEN** an active video session on room client (`shellVariant="habitacion"`)
+- **WHEN** user views room video overlay
+- **THEN** a fixed floating control MUST open a confirmation modal to end the call
+- **AND** the video stage MUST NOT shrink when the control is shown
+
 ### REQ-UI-006: Diseño
-The UI MUST follow microprompt guidelines:
-- Light background, dark text (video overlay: dark fullscreen)
+The UI MUST follow microprompt guidelines on dashboard routes:
+- Light background, dark text (staff video overlay: dark fullscreen)
 - Accent `#0d9488`
 - No decorative photographic images; CSS/SVG icons for actions; institution logo MAY appear in header (`InstitutionBrand`)
 - Mobile-first responsive layout
+
+**`/habitacion` only** (dark habitacion theme):
+- Background `#0d1b2a`, foreground `#f0f4f8`, muted `#7a9ab5`
+- Role accents: nurse `#5ee9b5`, quality `#ffd230`, doctor `#74d4ff` (section borders/backgrounds per Figma Design `0S2BGDsyMvuF24YFo3bkqj`)
+- Nunito typography via `app/habitacion/layout.tsx`
+- Dashboard, login, and estadísticas retain existing light theme
 
 ### REQ-UI-007: Protección rutas dashboard
 Dashboard routes (except login) MUST redirect unauthenticated users to `/dashboard/login` via layout guard (not Next.js middleware).
@@ -129,6 +162,7 @@ The dynamic manifest `GET /api/manifest?key={roomKey}` MUST include:
 - `start_url` with `?key={roomKey}`
 - `name` / `short_name` from room `label`
 - `display: fullscreen` (with `display_override`)
+- `background_color` and `theme_color` `#0d1b2a`
 - PNG icons 192×192 and 512×512
 
 `web/public/manifest.json` MAY remain as generic fallback for non-room routes.
@@ -140,7 +174,9 @@ Server-rendered `/habitacion?key=` MUST link the dynamic manifest in initial HTM
 
 ### REQ-UI-010: Componente video compartido
 `components/VideoCallSession.tsx` MUST encapsulate WebRTC lifecycle for room and staff roles.
-`VideoCallSession` MUST expose call termination from the footer without navigating away first.
+`VideoCallSession` MUST expose call termination without navigating away first.
+
+`VideoCallSession` MUST accept optional `shellVariant="habitacion"` for room overlay styling aligned with habitacion theme (dark shell, floating end-call trigger + modal). Staff dashboard MUST keep default shell with footer bar.
 
 #### Scenario: Cleanup
 - **WHEN** call status becomes `completed` or `cancelled`
@@ -155,7 +191,7 @@ Server-rendered `/habitacion?key=` MUST link the dynamic manifest in initial HTM
 - **AND** SHOULD return user to dashboard or idle video UI
 
 #### Room
-- **WHEN** user taps **Finalizar llamada** on room video overlay
+- **WHEN** user confirms end on room video overlay (`shellVariant="habitacion"`)
 - **THEN** client MUST PATCH `/api/calls/room` with `{ action: "cancel", roomKey }`
 - **AND** MUST release media tracks and close peer connection
 - **AND** MUST return to room call buttons UI
@@ -249,7 +285,25 @@ When room is loaded and browser supports install:
 
 ### REQ-UI-019: Branding institucional
 
-Room tablet UI, dashboard login, and unconfigured screen MUST show institution logo via `InstitutionBrand` (default `public/branding/clinicamg-logo.png`; overridable via `NEXT_PUBLIC_INSTITUTION_LOGO_URL`).
+Room tablet UI (habitacion header) and unconfigured screen MUST show institution logo on dark background. Dashboard login MAY use `InstitutionBrand` on light background.
+
+Default logo: `public/branding/clinicamg-logo.png`; overridable via `NEXT_PUBLIC_INSTITUTION_LOGO_URL`.
+
+### REQ-UI-020: Componentes habitación (UI kit)
+
+Route `/habitacion` SHOULD implement UI via scoped components:
+
+| Component | Responsibility |
+|-----------|----------------|
+| `habitacion-theme.ts` | Color tokens per role |
+| `HabitacionHeader` | Logo, title, subtitle, clock, date |
+| `HabitacionCallButton` | Timbre/Video idle/active visuals |
+| `HabitacionCallModal` | Active call overlay (cancel/finalize) |
+| `HabitacionVideoEndModal` | Video end confirmation |
+| `HabitacionToast` | Fixed errors/success messages |
+| `HabitacionClient` | Room SSE, API orchestration |
+| `InstallRoomBanner` | PWA install CTA (sky tint) |
+| `RoomUnconfiguredScreen` | Dark support screen |
 
 ## Audio (bell)
 

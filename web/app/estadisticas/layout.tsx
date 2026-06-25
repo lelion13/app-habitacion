@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { hasAtLeastRole } from "@/lib/system-roles";
 
 export default function EstadisticasLayout({
   children,
@@ -17,10 +18,18 @@ export default function EstadisticasLayout({
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/dashboard/login");
+      return;
+    }
+    if (
+      !loading &&
+      user &&
+      !hasAtLeastRole(user.systemRole, "supervisor")
+    ) {
+      router.replace("/dashboard");
     }
   }, [loading, user, router]);
 
-  if (loading || !user) {
+  if (loading || !user || !hasAtLeastRole(user.systemRole, "supervisor")) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <p className="text-slate-600">Cargando…</p>

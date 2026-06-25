@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import type { AuthUser } from "./types";
+import type { AuthUser, SystemRole } from "./types";
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-me";
 
@@ -8,6 +8,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   name: string;
+  systemRole: SystemRole;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -26,6 +27,7 @@ export function signToken(user: AuthUser): string {
     sub: user.id,
     email: user.email,
     name: user.name,
+    systemRole: user.systemRole,
   };
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "12h" });
 }

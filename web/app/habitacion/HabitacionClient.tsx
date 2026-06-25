@@ -35,6 +35,7 @@ interface RoomInfo {
   floor: string;
   sector: string;
   label: string;
+  active: boolean;
 }
 
 interface ActiveCall {
@@ -174,7 +175,7 @@ export function HabitacionClient() {
   }, [activeCall?.id, activeCall?.status]);
 
   async function createCall(type: CallType, targetRole: StaffRole) {
-    if (activeCall || !roomKey) return;
+    if (activeCall || !roomKey || (room && !room.active)) return;
     setCalling(true);
     setLastCall(null);
     setError(null);
@@ -220,6 +221,7 @@ export function HabitacionClient() {
   if (unconfigured) return <RoomUnconfiguredScreen />;
 
   const hasActiveCall = activeCall !== null;
+  const roomInactive = room !== null && !room.active;
   const showVideoSession =
     activeCall?.type === "video" && activeCall.status === "accepted";
 
@@ -267,6 +269,17 @@ export function HabitacionClient() {
           <div className="mx-4 mt-2 h-px shrink-0" style={{ background: HABITACION_BORDER }} />
 
           <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
+
+          {roomInactive && (
+            <div className="mx-4 mt-2 shrink-0 rounded-xl border border-amber-500/40 bg-amber-500/15 px-4 py-3 text-center">
+              <p className="text-sm font-bold text-amber-200">
+                Esta habitación está inactiva
+              </p>
+              <p className="mt-1 text-xs font-semibold text-amber-100/80">
+                No es posible realizar llamados. Contacte a administración.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="habitacion-body">
@@ -306,6 +319,7 @@ export function HabitacionClient() {
                       ringColor={theme.ringColor}
                       visualState={buttonVisualState(role, "bell")}
                       disabled={
+                        roomInactive ||
                         calling ||
                         (hasActiveCall &&
                           !(
@@ -321,6 +335,7 @@ export function HabitacionClient() {
                       ringColor={theme.ringColor}
                       visualState={buttonVisualState(role, "video")}
                       disabled={
+                        roomInactive ||
                         calling ||
                         (hasActiveCall &&
                           !(

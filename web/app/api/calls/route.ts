@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { getBearerToken, verifyToken } from "@/lib/auth";
 import { isCallType, isStaffRole, validateListenConfig } from "@/lib/validation";
 import { resolveRoomKey } from "@/lib/room-key";
+import { roomIsCallable } from "@/lib/admin-catalog";
 import { serializeCall, ACTIVE_CALL_STATUSES } from "@/lib/calls";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
 import { notifyTelegramStaffForCall } from "@/lib/telegram";
@@ -36,6 +37,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Habitación no encontrada" },
         { status: 404 },
+      );
+    }
+
+    if (!roomIsCallable(room)) {
+      return NextResponse.json(
+        { error: "Habitación inactiva. Contacte a administración." },
+        { status: 403 },
       );
     }
 

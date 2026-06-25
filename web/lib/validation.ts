@@ -1,4 +1,5 @@
-import type { CallType, ListenConfig, StaffRole } from "./types";
+import type { CallType, ListenConfig, StaffRole, SystemRole } from "./types";
+import { isSystemRole } from "./system-roles";
 
 const STAFF_ROLES: StaffRole[] = ["nurse", "quality", "doctor"];
 const CALL_TYPES: CallType[] = ["bell", "video"];
@@ -30,6 +31,14 @@ export function validateEmail(email: string): boolean {
 
 export function validatePassword(password: string): boolean {
   return password.length >= 6;
+}
+
+export function validateSystemRole(value: string): value is SystemRole {
+  return isSystemRole(value);
+}
+
+export function validateNonEmpty(value: string): boolean {
+  return value.trim().length > 0;
 }
 
 export function listenKey(config: ListenConfig): string {

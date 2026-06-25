@@ -7,8 +7,12 @@ import {
   verifyPassword,
   verifyToken,
 } from "@/lib/auth";
+import { toAuthUser } from "@/lib/admin-auth";
+import { runAdminMigrations } from "@/lib/admin-migrate";
+import { normalizeSystemRole } from "@/lib/system-roles";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import type { User } from "@/lib/types";
+import { isUserActive } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,24 +28,30 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDb();
+    await runAdminMigrations(db);
+
     const user = await db.collection<User>("users").findOne({ email });
 
-    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    if (
+      !user ||
+      !isUserActive(user) ||
+      !(await verifyPassword(password, user.passwordHash))
+    ) {
       return NextResponse.json(
         { error: "Credenciales inválidas" },
         { status: 401 },
       );
     }
 
-    const token = signToken({
-      id: user._id!.toString(),
-      email: user.email,
-      name: user.name,
+    const authUser = toAuthUser({
+      ...user,
+      systemRole: normalizeSystemRole(user.systemRole),
     });
+    const token = signToken(authUser);
 
     return NextResponse.json({
       token,
-      user: { id: user._id!.toString(), email: user.email, name: user.name },
+      user: authUser,
     });
   } catch {
     return NextResponse.json({ error: "Error al iniciar sesión" }, { status: 500 });
@@ -60,15 +70,17 @@ export async function GET(request: NextRequest) {
   }
 
   const db = await getDb();
+  await runAdminMigrations(db);
+
   const user = await db
     .collection<User>("users")
     .findOne({ _id: new ObjectId(payload.sub) });
 
-  if (!user) {
+  if (!user || !isUserActive(user)) {
     return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
   }
 
   return NextResponse.json({
-    user: { id: user._id!.toString(), email: user.email, name: user.name },
+    user: toAuthUser(user),
   });
 }

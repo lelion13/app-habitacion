@@ -44,8 +44,29 @@ http://localhost:3000/habitacion?key=room-101-key
 
 ## Credenciales demo
 
-- Dashboard: `admin@hospital.com` / `admin123`
+- Dashboard: `admin@hospital.com` / `admin123` (**rol admin**)
 - Habitaciones: `room-101-key`, `room-102-key`, `room-201-key`
+
+## Roles de sistema (dashboard)
+
+| Rol | Acceso |
+|-----|--------|
+| `user` | Escucha / llamados + Telegram |
+| `supervisor` | + `/estadisticas` |
+| `admin` | + `/dashboard/admin` (ABM) |
+
+La migración de roles y catálogos piso/sector corre automáticamente al **login** (`runAdminMigrations`). Tras deploy, el usuario seed `admin@hospital.com` queda como `admin`; el resto sin rol → `user`.
+
+### ABM (solo admin)
+
+1. Dashboard home → **Administración**
+2. Pestañas: Usuarios, Pisos, Sectores, Habitaciones
+3. Habitación nueva: `roomKey` se genera solo; copiarlo para la tablet `?key=`
+4. Habitación inactiva: la tablet muestra aviso y no puede llamar
+
+### Prod sin re-seed
+
+Si ya hay datos en Mongo, basta con que un usuario haga login (migración idempotente). Si no hay ningún admin activo, el primer usuario de la colección se promueve a `admin`.
 
 ## Verificación local
 
@@ -86,6 +107,19 @@ Orden recomendado: staff abre video **antes** o **después** de habitación — 
 4. Abrir ícono (nombre = label de habitación, ej. Habitación 101)
 5. Debe cargar en **fullscreen** sin pedir key
 6. El banner de instalación **no** debe verse dentro de la app ya instalada
+
+## UI habitación (tablet / PWA)
+
+Ver spec `REQ-UI-002` y change archivado `2026-06-19-room-ui-refresh`.
+
+Checklist visual:
+
+1. Tema oscuro `#0d1b2a`, tres sectores visibles sin scroll vertical
+2. Reloj actualiza cada segundo; fecha bajo la hora (derecha)
+3. Timbre o video → **modal** centrado (no footer que mueva sectores)
+4. Cancelar/finalizar desde el modal
+5. Videollamada aceptada → botón flotante **Finalizar videollamada** → modal de confirmación
+6. Errores y confirmaciones como toast fijo inferior
 
 Si muestra *Dispositivo no configurado*: reinstalar desde el link con `?key=` correcto o borrar datos de la app en Android.
 

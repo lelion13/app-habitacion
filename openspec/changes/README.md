@@ -4,7 +4,7 @@
 
 | Change | Estado | Resumen |
 |--------|--------|---------|
-| [room-ui-refresh](./room-ui-refresh/) | Implementado (pendiente verificación manual) | UI oscura habitación según Figma Make |
+| [admin-rbac-abm](./admin-rbac-abm/) | Propuesta + design + specs | RBAC user/supervisor/admin + ABM pisos/sectores/habitaciones/usuarios |
 
 ---
 
@@ -16,6 +16,7 @@
 | [2026-06-19-deploy-hostinger-ghcr](./archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik |
 | [2026-06-19-room-video-webrtc](./archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | WebRTC bidireccional |
 | [2026-06-19-video-ui-fixed-layout](./archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Layout 16:9 + footer finalizar |
+| [2026-06-19-room-ui-refresh](./archive/2026-06-19-room-ui-refresh/) | 2026-06-19 | UI oscura habitación Figma + modales llamada |
 | [2026-06-22-call-alerts-and-history](./archive/2026-06-22-call-alerts-and-history/) | 2026-06-22 | Alerta persistente + historial `/estadisticas` |
 | [2026-06-22-telegram-staff-alerts](./archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram escucha activa + vinculado |
 | [2026-06-22-pwa-tablet-room-bind](./archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, fullscreen |

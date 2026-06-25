@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { getBearerToken, verifyToken } from "@/lib/auth";
+import { isAuthError, requireSupervisor } from "@/lib/admin-auth";
 import { serializeCall } from "@/lib/calls";
 import {
   buildHistoryMatch,
@@ -18,10 +18,8 @@ interface HistorySummary {
 }
 
 export async function GET(request: NextRequest) {
-  const token = getBearerToken(request.headers.get("authorization"));
-  if (!token || !verifyToken(token)) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  const auth = await requireSupervisor(request);
+  if (isAuthError(auth)) return auth.error;
 
   const parsed = parseHistoryParams(request.nextUrl.searchParams);
   if ("error" in parsed) {

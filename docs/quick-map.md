@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-22):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + PWA tablet por habitación + **alerta persistente + historial `/estadisticas`** operativos.
+**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + PWA tablet por habitación + historial `/estadisticas` + **UI oscura habitación (Figma) con modales de llamada** operativos.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -18,7 +18,8 @@ Guía rápida para orientarse en el repo y en SDD.
 | Área | Ruta |
 |------|------|
 | App Next.js | `web/` |
-| PWA habitación | `web/app/habitacion/` |
+| PWA habitación | `web/app/habitacion/`, `web/components/habitacion/` |
+| Tema / UI habitación | `web/lib/habitacion-theme.ts`, `web/app/habitacion/habitacion.css` |
 | Room bind / manifest PWA | `web/lib/room-bind.ts`, `web/lib/room-manifest.ts`, `web/app/api/manifest/` |
 | Branding institución | `web/components/InstitutionBrand.tsx`, `web/public/branding/` |
 | Dashboard | `web/app/dashboard/` |
@@ -52,14 +53,17 @@ Guía rápida para orientarse en el repo y en SDD.
 | [baseline-mvp](../openspec/changes/archive/2026-06-18-baseline-mvp/) | 2026-06-18 | MVP timbre + dashboard |
 | [deploy-hostinger-ghcr](../openspec/changes/archive/2026-06-19-deploy-hostinger-ghcr/) | 2026-06-19 | Prod GHCR + Traefik + `?key=` |
 | [room-video-webrtc](../openspec/changes/archive/2026-06-19-room-video-webrtc/) | 2026-06-19 | Videollamada bidireccional |
-| [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar |
+| [video-ui-fixed-layout](../openspec/changes/archive/2026-06-19-video-ui-fixed-layout/) | 2026-06-19 | Marco 16:9 + footer finalizar (staff) |
+| [room-ui-refresh](../openspec/changes/archive/2026-06-19-room-ui-refresh/) | 2026-06-19 | UI oscura Figma + modales/toasts llamada |
 | [telegram-staff-alerts](../openspec/changes/archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram si escucha activa + vinculado |
 | [pwa-tablet-room-bind](../openspec/changes/archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, manifest dinámico, fullscreen |
 | [call-alerts-and-history](../openspec/changes/archive/2026-06-22-call-alerts-and-history/) | 2026-06-22 | Alerta persistente bell/video + historial `/estadisticas` |
 
 ## Changes activos
 
-_Ninguno — todos los changes implementados están archivados._
+| Change | Resumen |
+|--------|---------|
+| [admin-rbac-abm](../openspec/changes/admin-rbac-abm/) | RBAC user/supervisor/admin + ABM desde `/dashboard/admin` |
 
 ## Docs operativos
 

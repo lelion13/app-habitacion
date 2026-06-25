@@ -138,6 +138,7 @@ Implementación: `lib/room-bind.ts`, `lib/room-manifest.ts`, `components/Install
 | ADR-D02 | Mongo en stack VPS | MongoDB Atlas | Patrón apps lionapp.cloud |
 | ADR-V01 | Signaling SSE + buffer in-memory | Mongo persistencia | Simplicidad; poll fallback |
 | ADR-V02 | Overlay video en habitación | Ruta `/habitacion/video/[id]` | Mantener SSE room activo |
+| ADR-UI-01 | UI habitación oscura Figma | Retocar dashboard | Tablet kiosk dedicada; modales fijos sin layout shift |
 | ADR-V03 | Habitación = offerer | Staff offerer | Staff entra tarde al abrir link |
 | ADR-V04 | STUN público sin TURN v1 | TURN self-hosted | Menos ops; backlog si NAT falla |
 | ADR-T01 | Telegram DM a staff vinculado | Grupo/canal por piso | Privacidad; match escucha activa |
@@ -157,11 +158,12 @@ web/
 │   │   ├── calls/[id]/signal/   # WebRTC signaling
 │   │   ├── staff/telegram/      # Vinculación cuenta
 │   │   └── telegram/webhook/    # Bot updates
-│   ├── habitacion/              # PWA + overlay video + room bind
+│   ├── habitacion/              # PWA dark UI + overlay video + room bind
 │   ├── estadisticas/            # Historial y KPIs staff
 │   └── dashboard/
 │       └── video/[callId]/      # Staff video
 ├── components/
+│   ├── habitacion/              # Header, modales, botones llamada
 │   ├── VideoCallSession.tsx     # WebRTC compartido
 │   ├── InstallRoomBanner.tsx
 │   ├── StandaloneRoomGuard.tsx
