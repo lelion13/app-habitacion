@@ -5,6 +5,18 @@ import { useApp } from "@/context/AppContext";
 import { PageHeader } from "@/components/PageHeader";
 import { formatDurationMs } from "@/lib/format-duration";
 import {
+  staffBtnPrimary,
+  staffBtnSecondary,
+  staffCard,
+  staffContent,
+  staffEmpty,
+  staffError,
+  staffInput,
+  staffKpiCard,
+  staffLabelXs,
+  staffText,
+} from "@/lib/staff-theme";
+import {
   CALL_TYPE_LABELS,
   ROLE_LABELS,
   type CallStatus,
@@ -135,7 +147,7 @@ export default function EstadisticasPage() {
   const roles: StaffRole[] = ["nurse", "quality", "doctor"];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <main className={staffContent}>
       <PageHeader
         title="Estadísticas"
         subtitle="Historial de timbres y videollamadas — todo el hospital"
@@ -143,50 +155,50 @@ export default function EstadisticasPage() {
 
       <form
         onSubmit={handleFilterSubmit}
-        className="mb-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4"
+        className={`mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 ${staffCard}`}
       >
         <div>
-          <label className="block text-xs font-medium text-slate-600">Desde</label>
+          <label className={staffLabelXs}>Desde</label>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Hasta</label>
+          <label className={staffLabelXs}>Hasta</label>
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Piso</label>
+          <label className={staffLabelXs}>Piso</label>
           <input
             value={floor}
             onChange={(e) => setFloor(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
             placeholder="Todos"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Sector</label>
+          <label className={staffLabelXs}>Sector</label>
           <input
             value={sector}
             onChange={(e) => setSector(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
             placeholder="Todos"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Rol destino</label>
+          <label className={staffLabelXs}>Rol destino</label>
           <select
             value={targetRole}
             onChange={(e) => setTargetRole(e.target.value as StaffRole | "")}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
           >
             <option value="">Todos</option>
             {roles.map((r) => (
@@ -197,20 +209,20 @@ export default function EstadisticasPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Habitación</label>
+          <label className={staffLabelXs}>Habitación</label>
           <input
             value={roomNumber}
             onChange={(e) => setRoomNumber(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
             placeholder="Ej. 101"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Tipo</label>
+          <label className={staffLabelXs}>Tipo</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as CallType | "")}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
           >
             <option value="">Todos</option>
             <option value="bell">Timbre</option>
@@ -218,11 +230,11 @@ export default function EstadisticasPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-slate-600">Estado</label>
+          <label className={staffLabelXs}>Estado</label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as CallStatus | "")}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={`mt-1 w-full ${staffInput}`}
           >
             <option value="">Todos</option>
             {(Object.keys(STATUS_LABELS) as CallStatus[]).map((s) => (
@@ -236,7 +248,7 @@ export default function EstadisticasPage() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+            className={staffBtnPrimary}
           >
             {loading ? "Cargando…" : "Aplicar filtros"}
           </button>
@@ -244,9 +256,7 @@ export default function EstadisticasPage() {
       </form>
 
       {error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </p>
+        <p className={`mb-4 ${staffError}`}>{error}</p>
       )}
 
       {summary && (
@@ -265,9 +275,9 @@ export default function EstadisticasPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className={`overflow-x-auto ${staffCard}`}>
         <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-600">
+          <thead className="border-b border-white/10 bg-white/[0.03] text-xs uppercase text-[#7a9ab5]">
             <tr>
               <th className="px-4 py-3">Fecha</th>
               <th className="px-4 py-3">Hab.</th>
@@ -283,13 +293,13 @@ export default function EstadisticasPage() {
           <tbody>
             {calls.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-slate-500">
+                <td colSpan={9} className={`px-4 py-10 text-center ${staffText}`}>
                   Sin resultados para los filtros seleccionados.
                 </td>
               </tr>
             ) : (
               calls.map((call) => (
-                <tr key={call.id} className="border-b border-slate-100">
+                <tr key={call.id} className="border-b border-white/[0.06] text-[#f0f4f8]">
                   <td className="whitespace-nowrap px-4 py-3">
                     {new Date(call.createdAt).toLocaleString("es")}
                   </td>
@@ -322,18 +332,18 @@ export default function EstadisticasPage() {
             type="button"
             disabled={page <= 1 || loading}
             onClick={() => setPage((p) => p - 1)}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm disabled:opacity-50"
+            className={staffBtnSecondary}
           >
             Anterior
           </button>
-          <span className="text-sm text-slate-600">
+          <span className={staffText}>
             Página {page} de {totalPages}
           </span>
           <button
             type="button"
             disabled={page >= totalPages || loading}
             onClick={() => setPage((p) => p + 1)}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm disabled:opacity-50"
+            className={staffBtnSecondary}
           >
             Siguiente
           </button>
@@ -345,11 +355,11 @@ export default function EstadisticasPage() {
 
 function KpiCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div className={staffKpiCard}>
+      <p className="text-xs font-medium uppercase tracking-wide text-[#7a9ab5]">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
+      <p className="mt-1 text-2xl font-bold text-[#f0f4f8]">{value}</p>
     </div>
   );
 }

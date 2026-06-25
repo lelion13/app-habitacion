@@ -15,11 +15,13 @@ interface AppContextValue {
   user: AuthUser | null;
   token: string | null;
   listenConfig: ListenConfig | null;
+  listening: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => void;
   setListenConfig: (config: ListenConfig | null) => void;
   saveListenConfig: (config: ListenConfig) => Promise<string | null>;
+  setListening: (value: boolean) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -34,6 +36,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [listening, setListening] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_KEY);
@@ -127,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     setListenConfigState(null);
+    setListening(false);
   }, []);
 
   const setListenConfig = useCallback((config: ListenConfig | null) => {
@@ -162,16 +166,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user,
       token,
       listenConfig,
+      listening,
       loading,
       login,
       logout,
       setListenConfig,
       saveListenConfig,
+      setListening,
     }),
     [
       user,
       token,
       listenConfig,
+      listening,
       loading,
       login,
       logout,

@@ -17,8 +17,11 @@ export default function AdminPage() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <p className="text-slate-600">Cargando…</p>
+      <div
+        className="flex min-h-[40vh] items-center justify-center"
+        style={{ color: "#7a9ab5" }}
+      >
+        <p>Cargando…</p>
       </div>
     );
   }

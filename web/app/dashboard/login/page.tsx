@@ -3,12 +3,23 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useApp } from "@/context/AppContext";
-import { PageHeader } from "@/components/PageHeader";
+import { getInstitutionBrand } from "@/lib/institution-branding";
+import {
+  STAFF_BG,
+  STAFF_FG,
+  staffBtnPrimary,
+  staffCard,
+  staffError,
+  staffInput,
+  staffLabel,
+} from "@/lib/staff-theme";
 
 export default function DashboardLoginPage() {
   const { login, user, loading } = useApp();
   const router = useRouter();
+  const { logoSrc, logoAlt } = getInstitutionBrand();
   const [email, setEmail] = useState("admin@hospital.com");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +33,11 @@ export default function DashboardLoginPage() {
 
   if (loading || user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <p className="text-slate-600">{user ? "Redirigiendo…" : "Cargando…"}</p>
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: STAFF_BG, color: STAFF_FG }}
+      >
+        <p className="text-[#7a9ab5]">{user ? "Redirigiendo…" : "Cargando…"}</p>
       </div>
     );
   }
@@ -42,16 +56,28 @@ export default function DashboardLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <PageHeader
-          showInstitutionLogo
-          title="Dashboard"
-          subtitle="Inicie sesión para escuchar llamados"
-        />
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <main
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{ background: STAFF_BG, color: STAFF_FG }}
+    >
+      <div className={`w-full max-w-md p-8 ${staffCard}`}>
+        <div className="mb-6 flex justify-center">
+          <Image
+            src={logoSrc}
+            alt={logoAlt}
+            width={280}
+            height={64}
+            priority
+            className="h-14 w-auto object-contain"
+          />
+        </div>
+        <h1 className="text-center text-2xl font-bold text-[#f0f4f8]">Dashboard</h1>
+        <p className="mt-2 text-center text-sm text-[#7a9ab5]">
+          Inicie sesión para escuchar llamados
+        </p>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="email" className={staffLabel}>
               Correo
             </label>
             <input
@@ -59,12 +85,12 @@ export default function DashboardLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
+              className={`mt-1 w-full ${staffInput}`}
               required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="password" className={staffLabel}>
               Contraseña
             </label>
             <input
@@ -72,23 +98,21 @@ export default function DashboardLoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
+              className={`mt-1 w-full ${staffInput}`}
               required
             />
           </div>
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className={staffError}>{error}</p>}
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-teal-600 py-3 font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+            className={`w-full py-3 ${staffBtnPrimary}`}
           >
             {submitting ? "Entrando…" : "Iniciar sesión"}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
-          <Link href="/" className="text-teal-700 hover:underline">
+        <p className="mt-6 text-center text-sm text-[#7a9ab5]">
+          <Link href="/" className="text-[#5ee9b5] hover:underline">
             Volver al inicio
           </Link>
         </p>

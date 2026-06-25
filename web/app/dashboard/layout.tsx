@@ -1,21 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { hasAtLeastRole } from "@/lib/system-roles";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { STAFF_BG, STAFF_FG } from "@/lib/staff-theme";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, logout } = useApp();
+  const { user, loading } = useApp();
   const router = useRouter();
   const pathname = usePathname();
   const isLogin = pathname === "/dashboard/login";
-  const canViewStats = hasAtLeastRole(user?.systemRole ?? "user", "supervisor");
+  const isVideo = pathname.startsWith("/dashboard/video/");
 
   useEffect(() => {
     if (!loading && !user && !isLogin) {
@@ -27,50 +27,20 @@ export default function DashboardLayout({
     return <>{children}</>;
   }
 
+  if (isVideo) {
+    return <>{children}</>;
+  }
+
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <p className="text-slate-600">Cargando…</p>
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: STAFF_BG, color: STAFF_FG }}
+      >
+        <p className="text-[#7a9ab5]">Cargando…</p>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white px-4 py-3">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="font-semibold text-slate-900">
-              Dashboard · {user.name}
-            </span>
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-teal-800 underline"
-            >
-              Escucha
-            </Link>
-            {canViewStats && (
-              <Link
-                href="/estadisticas"
-                className="text-sm font-medium text-teal-700 hover:text-teal-900"
-              >
-                Estadísticas
-              </Link>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              router.push("/dashboard/login");
-            }}
-            className="text-sm font-medium text-teal-700 hover:text-teal-900"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </nav>
-      {children}
-    </div>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

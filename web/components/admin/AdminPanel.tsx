@@ -5,6 +5,19 @@ import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { PageHeader } from "@/components/PageHeader";
 import { SYSTEM_ROLE_LABELS, type SystemRole } from "@/lib/types";
+import {
+  staffBtnGhost,
+  staffBtnPrimary,
+  staffBtnSecondary,
+  staffCard,
+  staffContent,
+  staffError,
+  staffInput,
+  staffTabActive,
+  staffTabInactive,
+  staffText,
+  staffTitle,
+} from "@/lib/staff-theme";
 
 type AdminTab = "users" | "floors" | "sectors" | "rooms";
 
@@ -250,11 +263,10 @@ export function AdminPanel() {
   const activeSectors = sectors.filter((s) => s.active);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <main className={staffContent}>
       <PageHeader
         title="Administración"
         subtitle="Usuarios, pisos, sectores y habitaciones"
-        backHref="/dashboard"
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -263,11 +275,7 @@ export function AdminPanel() {
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold ${
-              tab === item.id
-                ? "bg-teal-600 text-white"
-                : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-            }`}
+            className={tab === item.id ? staffTabActive : staffTabInactive}
           >
             {item.label}
           </button>
@@ -275,18 +283,18 @@ export function AdminPanel() {
       </div>
 
       {error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        <p className={`mb-4 ${staffError}`}>{error}</p>
       )}
-      {loading && <p className="mb-4 text-sm text-slate-500">Cargando…</p>}
+      {loading && <p className={`mb-4 ${staffText}`}>Cargando…</p>}
 
       {tab === "users" && (
         <section className="space-y-6">
           <form
             key={editingUserId ?? "new-user"}
             onSubmit={(e) => void handleUserSubmit(e)}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className={staffCard}
           >
-            <h2 className="mb-4 text-lg font-bold text-slate-900">
+            <h2 className={`mb-4 ${staffTitle}`}>
               {editingUser ? "Editar usuario" : "Nuevo usuario"}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -297,19 +305,19 @@ export function AdminPanel() {
                 readOnly={Boolean(editingUser)}
                 defaultValue={editingUser?.email ?? ""}
                 placeholder="Email"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               <input
                 name="name"
                 required
                 defaultValue={editingUser?.name ?? ""}
                 placeholder="Nombre"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               <select
                 name="systemRole"
                 defaultValue={editingUser?.systemRole ?? "user"}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               >
                 {(Object.keys(SYSTEM_ROLE_LABELS) as SystemRole[]).map((role) => (
                   <option key={role} value={role}>
@@ -322,10 +330,10 @@ export function AdminPanel() {
                 type="password"
                 required={!editingUser}
                 placeholder={editingUser ? "Nueva contraseña (opcional)" : "Contraseña"}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               {editingUser && (
-                <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm text-[#7a9ab5] sm:col-span-2">
                   <input
                     name="active"
                     type="checkbox"
@@ -338,7 +346,7 @@ export function AdminPanel() {
             <div className="mt-4 flex gap-2">
               <button
                 type="submit"
-                className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+                className={`${staffBtnPrimary}`}
               >
                 {editingUser ? "Guardar cambios" : "Crear usuario"}
               </button>
@@ -346,7 +354,7 @@ export function AdminPanel() {
                 <button
                   type="button"
                   onClick={() => setEditingUserId(null)}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                  className={staffBtnSecondary}
                 >
                   Cancelar
                 </button>
@@ -358,11 +366,11 @@ export function AdminPanel() {
             {users.map((user) => (
               <li
                 key={user.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3"
+                className={`flex flex-wrap items-center justify-between gap-2 ${staffCard}`}
               >
                 <div>
-                  <p className="font-semibold text-slate-900">{user.name}</p>
-                  <p className="text-sm text-slate-600">
+                  <p className="font-semibold text-[#f0f4f8]">{user.name}</p>
+                  <p className="text-sm text-[#7a9ab5]">
                     {user.email} · {SYSTEM_ROLE_LABELS[user.systemRole]}
                     {!user.active && " · Inactivo"}
                   </p>
@@ -370,7 +378,7 @@ export function AdminPanel() {
                 <button
                   type="button"
                   onClick={() => setEditingUserId(user.id)}
-                  className="text-sm font-medium text-teal-700 hover:underline"
+                  className="text-sm font-medium text-[#5ee9b5] hover:underline"
                 >
                   Editar
                 </button>
@@ -385,9 +393,9 @@ export function AdminPanel() {
           <form
             key={editingFloorId ?? "new-floor"}
             onSubmit={(e) => void handleFloorSubmit(e)}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className={staffCard}
           >
-            <h2 className="mb-4 text-lg font-bold text-slate-900">
+            <h2 className={`mb-4 ${staffTitle}`}>
               {editingFloor ? "Editar piso" : "Nuevo piso"}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -396,17 +404,17 @@ export function AdminPanel() {
                 required
                 defaultValue={editingFloor?.name ?? ""}
                 placeholder="Nombre (ej. 1)"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               <input
                 name="label"
                 required
                 defaultValue={editingFloor?.label ?? ""}
                 placeholder="Etiqueta (ej. Piso 1)"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               {editingFloor && (
-                <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm text-[#7a9ab5] sm:col-span-2">
                   <input name="active" type="checkbox" defaultChecked={editingFloor.active} />
                   Activo
                 </label>
@@ -415,12 +423,12 @@ export function AdminPanel() {
             <div className="mt-4 flex gap-2">
               <button
                 type="submit"
-                className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white"
+                className={staffBtnPrimary}
               >
                 {editingFloor ? "Guardar" : "Crear piso"}
               </button>
               {editingFloor && (
-                <button type="button" onClick={() => setEditingFloorId(null)} className="rounded-lg border px-4 py-2 text-sm">
+                <button type="button" onClick={() => setEditingFloorId(null)} className={staffBtnSecondary}>
                   Cancelar
                 </button>
               )}
@@ -428,11 +436,11 @@ export function AdminPanel() {
           </form>
           <ul className="space-y-2">
             {floors.map((floor) => (
-              <li key={floor.id} className="flex justify-between rounded-xl border bg-white px-4 py-3">
+              <li key={floor.id} className={`flex justify-between ${staffCard}`}>
                 <span>
                   {floor.label} ({floor.name}){!floor.active && " · Inactivo"}
                 </span>
-                <button type="button" onClick={() => setEditingFloorId(floor.id)} className="text-sm text-teal-700">
+                <button type="button" onClick={() => setEditingFloorId(floor.id)} className="text-sm text-[#5ee9b5]">
                   Editar
                 </button>
               </li>
@@ -446,9 +454,9 @@ export function AdminPanel() {
           <form
             key={editingSectorId ?? "new-sector"}
             onSubmit={(e) => void handleSectorSubmit(e)}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className={staffCard}
           >
-            <h2 className="mb-4 text-lg font-bold text-slate-900">
+            <h2 className={`mb-4 ${staffTitle}`}>
               {editingSector ? "Editar sector" : "Nuevo sector"}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -457,14 +465,14 @@ export function AdminPanel() {
                 required
                 defaultValue={editingSector?.code ?? ""}
                 placeholder="Código (ej. A)"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               <input
                 name="label"
                 required
                 defaultValue={editingSector?.label ?? ""}
                 placeholder="Etiqueta"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               {editingSector && (
                 <label className="flex items-center gap-2 text-sm sm:col-span-2">
@@ -474,11 +482,11 @@ export function AdminPanel() {
               )}
             </div>
             <div className="mt-4 flex gap-2">
-              <button type="submit" className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white">
+              <button type="submit" className={staffBtnPrimary}>
                 {editingSector ? "Guardar" : "Crear sector"}
               </button>
               {editingSector && (
-                <button type="button" onClick={() => setEditingSectorId(null)} className="rounded-lg border px-4 py-2 text-sm">
+                <button type="button" onClick={() => setEditingSectorId(null)} className={staffBtnSecondary}>
                   Cancelar
                 </button>
               )}
@@ -486,11 +494,11 @@ export function AdminPanel() {
           </form>
           <ul className="space-y-2">
             {sectors.map((sector) => (
-              <li key={sector.id} className="flex justify-between rounded-xl border bg-white px-4 py-3">
+              <li key={sector.id} className={`flex justify-between ${staffCard}`}>
                 <span>
                   {sector.label} ({sector.code}){!sector.active && " · Inactivo"}
                 </span>
-                <button type="button" onClick={() => setEditingSectorId(sector.id)} className="text-sm text-teal-700">
+                <button type="button" onClick={() => setEditingSectorId(sector.id)} className="text-sm text-[#5ee9b5]">
                   Editar
                 </button>
               </li>
@@ -504,9 +512,9 @@ export function AdminPanel() {
           <form
             key={editingRoomId ?? "new-room"}
             onSubmit={(e) => void handleRoomSubmit(e)}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className={staffCard}
           >
-            <h2 className="mb-4 text-lg font-bold text-slate-900">
+            <h2 className={`mb-4 ${staffTitle}`}>
               {editingRoom ? "Editar habitación" : "Nueva habitación"}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -515,20 +523,20 @@ export function AdminPanel() {
                 required
                 defaultValue={editingRoom?.number ?? ""}
                 placeholder="Número"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               <input
                 name="label"
                 required
                 defaultValue={editingRoom?.label ?? ""}
                 placeholder="Etiqueta"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               />
               <select
                 name="floorId"
                 required
                 defaultValue={editingRoom?.floorId ?? ""}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               >
                 <option value="">Piso</option>
                 {activeFloors.map((floor) => (
@@ -541,7 +549,7 @@ export function AdminPanel() {
                 name="sectorId"
                 required
                 defaultValue={editingRoom?.sectorId ?? ""}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className={staffInput}
               >
                 <option value="">Sector</option>
                 {activeSectors.map((sector) => (
@@ -552,8 +560,8 @@ export function AdminPanel() {
               </select>
               {editingRoom && (
                 <>
-                  <p className="text-sm text-slate-600 sm:col-span-2">
-                    roomKey: <code className="rounded bg-slate-100 px-1">{editingRoom.roomKey}</code>
+                  <p className="text-sm text-[#7a9ab5] sm:col-span-2">
+                    roomKey: <code className="rounded bg-white/10 px-1 text-[#5ee9b5]">{editingRoom.roomKey}</code>
                   </p>
                   <label className="flex items-center gap-2 text-sm sm:col-span-2">
                     <input name="active" type="checkbox" defaultChecked={editingRoom.active} />
@@ -563,11 +571,11 @@ export function AdminPanel() {
               )}
             </div>
             <div className="mt-4 flex gap-2">
-              <button type="submit" className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white">
+              <button type="submit" className={staffBtnPrimary}>
                 {editingRoom ? "Guardar" : "Crear habitación"}
               </button>
               {editingRoom && (
-                <button type="button" onClick={() => setEditingRoomId(null)} className="rounded-lg border px-4 py-2 text-sm">
+                <button type="button" onClick={() => setEditingRoomId(null)} className={staffBtnSecondary}>
                   Cancelar
                 </button>
               )}
@@ -575,26 +583,26 @@ export function AdminPanel() {
           </form>
           <ul className="space-y-2">
             {rooms.map((room) => (
-              <li key={room.id} className="rounded-xl border bg-white px-4 py-3">
+              <li key={room.id} className={staffCard}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-slate-900">{room.label}</p>
-                    <p className="text-sm text-slate-600">
+                    <p className="font-semibold text-[#f0f4f8]">{room.label}</p>
+                    <p className="text-sm text-[#7a9ab5]">
                       Piso {room.floor} · Sector {room.sector}
                       {!room.active && " · Inactiva"}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#7a9ab5]/70">
                       key: {room.roomKey} ·{" "}
                       <Link
                         href={`/habitacion?key=${encodeURIComponent(room.roomKey)}`}
-                        className="text-teal-700 hover:underline"
+                        className="text-[#5ee9b5] hover:underline"
                         target="_blank"
                       >
                         Abrir tablet
                       </Link>
                     </p>
                   </div>
-                  <button type="button" onClick={() => setEditingRoomId(room.id)} className="text-sm text-teal-700">
+                  <button type="button" onClick={() => setEditingRoomId(room.id)} className="text-sm text-[#5ee9b5]">
                     Editar
                   </button>
                 </div>
