@@ -75,3 +75,19 @@ export async function GET(request: NextRequest) {
     },
   });
 }
+
+export async function DELETE(request: NextRequest) {
+  const token = getBearerToken(request.headers.get("authorization"));
+  const payload = token ? verifyToken(token) : null;
+  if (!payload) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const db = await getDb();
+  await db.collection<StaffSession>("staff_sessions").updateMany(
+    { userId: new ObjectId(payload.sub) },
+    { $set: { active: false, updatedAt: new Date() } },
+  );
+
+  return NextResponse.json({ listenConfig: null });
+}

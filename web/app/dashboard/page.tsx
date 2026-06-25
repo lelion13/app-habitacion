@@ -22,6 +22,7 @@ import {
 } from "@/lib/types";
 import {
   staffAlert,
+  staffBtnDanger,
   staffBtnGhost,
   staffBtnPrimary,
   staffBtnSecondary,
@@ -47,12 +48,13 @@ interface SerializedCall {
 }
 
 export default function DashboardPage() {
-  const { token, listenConfig, saveListenConfig, setListening } = useApp();
+  const { token, listenConfig, saveListenConfig, clearListenConfig, setListening } = useApp();
   const [floor, setFloor] = useState(listenConfig?.floor ?? "1");
   const [sector, setSector] = useState(listenConfig?.sector ?? "A");
   const [role, setRole] = useState<StaffRole>(listenConfig?.role ?? "nurse");
   const [calls, setCalls] = useState<SerializedCall[]>([]);
   const [saving, setSaving] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioReady, setAudioReady] = useState(false);
 
@@ -168,6 +170,16 @@ export default function DashboardPage() {
 
   async function enableAudioAlert(): Promise<void> {
     await enableAlertAudio(setAudioReady);
+  }
+
+  async function handleDeactivate() {
+    setDeactivating(true);
+    setError(null);
+    stopAlertLoop();
+    const err = await clearListenConfig();
+    if (err) setError(err);
+    else setCalls([]);
+    setDeactivating(false);
   }
 
   async function handleSave(e: FormEvent) {
@@ -294,7 +306,7 @@ export default function DashboardPage() {
             ))}
           </select>
         </div>
-        <div className="flex items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <button
             type="button"
             onClick={() => void handleTestSound()}
@@ -304,11 +316,21 @@ export default function DashboardPage() {
           </button>
           <button
             type="submit"
-            disabled={saving}
-            className={`w-full ${staffBtnPrimary}`}
+            disabled={saving || deactivating}
+            className={`flex-1 ${staffBtnPrimary}`}
           >
             {saving ? "Guardando…" : "Activar escucha"}
           </button>
+          {listenConfig && (
+            <button
+              type="button"
+              disabled={deactivating || saving}
+              onClick={() => void handleDeactivate()}
+              className={staffBtnDanger}
+            >
+              {deactivating ? "Desactivando…" : "Desactivar escucha"}
+            </button>
+          )}
         </div>
       </form>
 

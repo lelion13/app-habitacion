@@ -21,6 +21,7 @@ interface AppContextValue {
   logout: () => void;
   setListenConfig: (config: ListenConfig | null) => void;
   saveListenConfig: (config: ListenConfig) => Promise<string | null>;
+  clearListenConfig: () => Promise<string | null>;
   setListening: (value: boolean) => void;
 }
 
@@ -161,6 +162,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [token, setListenConfig],
   );
 
+  const clearListenConfig = useCallback(async () => {
+    if (!token) return "No autenticado";
+    const res = await fetch("/api/staff/session", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = (await res.json()) as { error?: string };
+    if (!res.ok) return data.error ?? "Error al desactivar";
+    setListenConfig(null);
+    setListening(false);
+    return null;
+  }, [token, setListenConfig, setListening]);
+
   const value = useMemo(
     () => ({
       user,
@@ -172,6 +186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout,
       setListenConfig,
       saveListenConfig,
+      clearListenConfig,
       setListening,
     }),
     [
@@ -184,6 +199,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout,
       setListenConfig,
       saveListenConfig,
+      clearListenConfig,
     ],
   );
 

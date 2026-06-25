@@ -22,43 +22,62 @@ interface NavItem {
   match: (pathname: string) => boolean;
 }
 
+function OnlineDot({ color = "#00bc7d", ping = true }: { color?: string; ping?: boolean }) {
+  return (
+    <span className="relative inline-flex h-2 w-2 shrink-0">
+      {ping && (
+        <span
+          className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+          style={{ backgroundColor: color }}
+        />
+      )}
+      <span
+        className="relative inline-flex h-2 w-2 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+    </span>
+  );
+}
+
 function ListenStatus() {
   const { listenConfig, listening } = useApp();
 
   if (listening && listenConfig) {
     return (
-      <div className="hidden items-center gap-2 sm:flex">
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#5ee9b5] opacity-60" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#00bc7d]" />
-        </span>
-        <div className="text-right text-xs leading-tight">
-          <p className="font-semibold text-[#5ee9b5]">En línea</p>
-          <p className="text-[#7a9ab5]">
-            Piso {listenConfig.floor} · {listenConfig.sector} ·{" "}
-            {ROLE_LABELS[listenConfig.role]}
-          </p>
+      <div className="hidden flex-col items-center sm:flex">
+        <div className="flex items-center justify-center gap-1.5">
+          <OnlineDot />
+          <span className="text-xs font-semibold text-[#5ee9b5]">En línea</span>
         </div>
+        <p className="mt-0.5 text-center text-xs text-[#7a9ab5]">
+          Piso {listenConfig.floor} · Sector {listenConfig.sector} ·{" "}
+          {ROLE_LABELS[listenConfig.role]}
+        </p>
       </div>
     );
   }
 
   if (listenConfig) {
     return (
-      <div className="hidden items-center gap-2 sm:flex">
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-        <div className="text-right text-xs leading-tight">
-          <p className="font-medium text-amber-200">Fuera de línea</p>
-          <p className="text-[#7a9ab5]">Abra Llamador para escuchar</p>
+      <div className="hidden flex-col items-center sm:flex">
+        <div className="flex items-center justify-center gap-1.5">
+          <OnlineDot color="#fbbf24" ping={false} />
+          <span className="text-xs font-medium text-amber-200">Fuera de línea</span>
         </div>
+        <p className="mt-0.5 text-center text-xs text-[#7a9ab5]">
+          Piso {listenConfig.floor} · Sector {listenConfig.sector} ·{" "}
+          {ROLE_LABELS[listenConfig.role]}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="hidden items-center gap-2 sm:flex">
-      <span className="h-2.5 w-2.5 rounded-full bg-white/25" />
-      <p className="text-xs text-[#7a9ab5]">Sin escucha configurada</p>
+    <div className="hidden flex-col items-center sm:flex">
+      <div className="flex items-center justify-center gap-1.5">
+        <OnlineDot color="rgba(255,255,255,0.25)" ping={false} />
+        <span className="text-xs text-[#7a9ab5]">Sin escucha</span>
+      </div>
     </div>
   );
 }
