@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Bell, Video, X, Phone, CheckCircle } from "lucide-react";
+import { Bell, Video } from "lucide-react";
 import type { StaffRole, CallType } from "@/lib/types";
 import { ROLE_LABELS, CALL_TYPE_LABELS } from "@/lib/types";
 import { VideoCallSession } from "@/components/VideoCallSession";
@@ -10,6 +10,8 @@ import { InstallRoomBanner } from "@/components/InstallRoomBanner";
 import { RoomUnconfiguredScreen } from "@/components/RoomUnconfiguredScreen";
 import { HabitacionHeader } from "@/components/habitacion/HabitacionHeader";
 import { HabitacionCallButton } from "@/components/habitacion/HabitacionCallButton";
+import { HabitacionCallModal } from "@/components/habitacion/HabitacionCallModal";
+import { HabitacionToast } from "@/components/habitacion/HabitacionToast";
 import {
   HABITACION_BG,
   HABITACION_BORDER,
@@ -43,14 +45,6 @@ interface ActiveCall {
 }
 
 const ROLES: StaffRole[] = ["nurse", "quality", "doctor"];
-
-function formatElapsed(seconds: number) {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
 
 function HabitacionLoading() {
   return (
@@ -273,17 +267,6 @@ export function HabitacionClient() {
           <div className="mx-4 mt-2 h-px shrink-0" style={{ background: HABITACION_BORDER }} />
 
           <InstallRoomBanner roomReady={Boolean(room)} roomLabel={room?.label} />
-
-          {error && (
-            <p className="mx-4 mt-2 shrink-0 truncate rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs text-red-300">
-              {error}
-            </p>
-          )}
-          {lastCall && !hasActiveCall && (
-            <p className="mx-4 mt-2 shrink-0 truncate rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-              {lastCall}
-            </p>
-          )}
         </div>
 
         <div className="habitacion-body">
@@ -291,19 +274,18 @@ export function HabitacionClient() {
             {ROLES.map((role) => {
               const theme = ROLE_THEME[role];
               const isActiveSector = activeCall?.targetRole === role;
-              const callState = isActiveSector ? activeCall?.status : null;
               const sectionBg = isActiveSector ? theme.activeBgStyle : theme.bgStyle;
 
               return (
                 <section
                   key={role}
-                  className="relative flex min-h-0 flex-col rounded-2xl border px-2 py-1 transition-all duration-300"
+                  className="relative flex min-h-0 flex-col rounded-2xl border px-2 py-1 transition-colors duration-300"
                   style={{
                     background: sectionBg,
                     borderColor: theme.borderStyle,
                   }}
                 >
-                  <div className="relative flex shrink-0 items-center justify-center gap-2 py-2">
+                  <div className="flex shrink-0 items-center justify-center gap-2 py-2">
                     <span
                       className={`text-4xl leading-none ${theme.textClass}`}
                       aria-hidden
@@ -315,20 +297,6 @@ export function HabitacionClient() {
                     >
                       {ROLE_LABELS[role]}
                     </span>
-
-                    {isActiveSector && callState === "accepted" && (
-                      <span className="absolute right-2 flex items-center gap-1 text-xs font-bold text-[#5ee9b5]">
-                        <CheckCircle size={14} />
-                        <span className="hidden min-[600px]:inline">En atención · </span>
-                        {formatElapsed(callElapsed)}
-                      </span>
-                    )}
-                    {isActiveSector && callState === "pending" && (
-                      <span className="absolute right-2 flex animate-pulse items-center gap-1 text-xs font-bold text-[#ffd230]">
-                        <Phone size={14} />
-                        Llamando...
-                      </span>
-                    )}
                   </div>
 
                   <div className="habitacion-call-row flex min-h-0 flex-1 items-center justify-center pb-3">
@@ -376,20 +344,28 @@ export function HabitacionClient() {
           </p>
         </div>
 
-        {hasActiveCall && !showVideoSession && (
-          <footer className="shrink-0 px-3 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4">
-            <button
-              type="button"
-              onClick={() => void cancelActiveCall()}
-              disabled={cancelling}
-              className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-black text-white shadow-lg transition-all duration-150 active:scale-[0.98] disabled:opacity-50 sm:rounded-2xl sm:py-3 sm:text-base"
-              style={{ background: "#ef4444" }}
-            >
-              <X size={20} strokeWidth={3} />
-              {cancelling ? "Cancelando…" : "Cancelar llamada"}
-            </button>
-          </footer>
+        {hasActiveCall && !showVideoSession && activeCall && (
+          <HabitacionCallModal
+            open
+            targetRole={activeCall.targetRole}
+            callType={activeCall.type}
+            status={activeCall.status}
+            elapsedSeconds={callElapsed}
+            cancelling={cancelling}
+            onCancel={() => void cancelActiveCall()}
+          />
         )}
+
+        <HabitacionToast
+          message={error}
+          variant="error"
+          onDismiss={() => setError(null)}
+        />
+        <HabitacionToast
+          message={!hasActiveCall ? lastCall : null}
+          variant="success"
+          onDismiss={() => setLastCall(null)}
+        />
       </div>
     </main>
   );

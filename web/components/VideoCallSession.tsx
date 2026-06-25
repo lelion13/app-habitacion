@@ -15,6 +15,8 @@ import {
   HABITACION_BORDER,
   HABITACION_MUTED,
 } from "@/lib/habitacion-theme";
+import { HabitacionVideoEndModal } from "@/components/habitacion/HabitacionVideoEndModal";
+import { HabitacionToast } from "@/components/habitacion/HabitacionToast";
 
 type ConnectionState = "idle" | "connecting" | "connected" | "error";
 type ShellVariant = "default" | "habitacion";
@@ -66,6 +68,7 @@ export function VideoCallSession({
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
 
   const cleanup = useCallback(() => {
     sessionActiveRef.current = false;
@@ -408,10 +411,13 @@ export function VideoCallSession({
   const endBtnClass = isHabitacion
     ? "min-h-12 w-full rounded-2xl text-base font-black text-white hover:opacity-90 disabled:opacity-50"
     : "min-h-12 w-full rounded-xl bg-red-600 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50";
+  const videoMaxHeight = isHabitacion
+    ? "max-h-[calc(100dvh-5rem)]"
+    : "max-h-[calc(100dvh-9rem)]";
 
   return (
     <div
-      className={`${shellClass} ${isHabitacion ? "" : "bg-slate-950"}`}
+      className={`${shellClass} ${isHabitacion ? "" : "bg-slate-950"} ${isHabitacion && started ? "relative" : ""}`}
       style={shellStyle}
     >
       {!started && role === "room" && !error && (
@@ -457,25 +463,29 @@ export function VideoCallSession({
 
       {started && (
         <>
-          <header
-            className={headerClass}
-            style={
-              isHabitacion
-                ? { borderColor: HABITACION_BORDER, color: HABITACION_MUTED }
-                : undefined
-            }
-          >
-            {statusLabel}
-          </header>
+          {!isHabitacion && (
+            <header className={headerClass}>
+              {statusLabel}
+            </header>
+          )}
 
-          {error && (
+          {isHabitacion && (
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 px-4 py-3 text-center text-sm font-semibold"
+              style={{ color: HABITACION_MUTED }}
+            >
+              {statusLabel}
+            </div>
+          )}
+
+          {error && !isHabitacion && (
             <p className="shrink-0 bg-red-950 px-4 py-2 text-center text-sm text-red-300">
               {error}
             </p>
           )}
 
           <div className="flex min-h-0 flex-1 items-center justify-center px-3 py-2">
-            <div className="relative aspect-video w-full max-w-5xl max-h-[calc(100dvh-9rem)]">
+            <div className={`relative aspect-video w-full max-w-5xl ${videoMaxHeight}`}>
               <video
                 ref={remoteVideoRef}
                 autoPlay
@@ -492,24 +502,41 @@ export function VideoCallSession({
             </div>
           </div>
 
-          <footer
-            className={footerClass}
-            style={
-              isHabitacion
-                ? { borderColor: HABITACION_BORDER, background: HABITACION_BG }
-                : undefined
-            }
-          >
-            <button
-              type="button"
-              onClick={() => void endCall()}
-              disabled={ending}
-              className={endBtnClass}
-              style={isHabitacion ? { background: "#ef4444" } : undefined}
-            >
-              {ending ? "Finalizando…" : "Finalizar llamada"}
-            </button>
-          </footer>
+          {isHabitacion ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowEndModal(true)}
+                className="habitacion-video-end-trigger"
+                style={{ background: "#ef4444" }}
+              >
+                Finalizar videollamada
+              </button>
+              <HabitacionVideoEndModal
+                open={showEndModal}
+                statusLabel={statusLabel}
+                ending={ending}
+                onEnd={() => void endCall()}
+                onClose={() => setShowEndModal(false)}
+              />
+              <HabitacionToast
+                message={error}
+                variant="error"
+                onDismiss={() => setError(null)}
+              />
+            </>
+          ) : (
+            <footer className={footerClass}>
+              <button
+                type="button"
+                onClick={() => void endCall()}
+                disabled={ending}
+                className={endBtnClass}
+              >
+                {ending ? "Finalizando…" : "Finalizar llamada"}
+              </button>
+            </footer>
+          )}
         </>
       )}
     </div>

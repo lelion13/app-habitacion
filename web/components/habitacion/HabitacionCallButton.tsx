@@ -22,7 +22,7 @@ export function HabitacionCallButton({
   onClick,
 }: HabitacionCallButtonProps) {
   const base =
-    "habitacion-call-btn flex flex-col items-center justify-center gap-1 rounded-xl font-black transition-all duration-150 select-none touch-manipulation";
+    "habitacion-call-btn flex flex-col items-center justify-center gap-1 rounded-xl font-black transition-colors duration-150 select-none touch-manipulation";
 
   if (visualState !== "idle") {
     const isConnected = visualState === "connected";
@@ -34,6 +34,7 @@ export function HabitacionCallButton({
           border: `2px solid ${isConnected ? "#00bc7d" : ringColor}`,
           color: isConnected ? "#5ee9b5" : "#ffd230",
         }}
+        aria-current="true"
       >
         {visualState === "calling" && (
           <span
@@ -43,16 +44,6 @@ export function HabitacionCallButton({
         )}
         <span className="relative z-10">{icon}</span>
         <span className="relative z-10 text-base">{label}</span>
-        {visualState === "calling" && (
-          <span className="relative z-10 text-xs font-bold opacity-75 animate-pulse">
-            Llamando...
-          </span>
-        )}
-        {isConnected && (
-          <span className="relative z-10 text-xs font-bold text-[#5ee9b5]">
-            En atención
-          </span>
-        )}
       </div>
     );
   }
