@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
 import { StandaloneRoomGuard } from "@/components/StandaloneRoomGuard";
+import { StaffListenBridge } from "@/components/StaffListenBridge";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -37,8 +38,10 @@ export default function RootLayout({
     <html lang="es" className={`${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         <AppProvider>
-          <StandaloneRoomGuard />
-          {children}
+          <StaffListenBridge>
+            <StandaloneRoomGuard />
+            {children}
+          </StaffListenBridge>
         </AppProvider>
       </body>
     </html>

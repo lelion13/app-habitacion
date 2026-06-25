@@ -1,25 +1,19 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import { useStaffListen } from "@/context/StaffListenContext";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleIcon, CallTypeIcon } from "@/components/RoleIcon";
-import {
-  playBell,
-  playVideoAlert,
-  stopAlertLoop,
-  syncAlertLoop,
-} from "@/lib/bell";
-import { enableAlertAudio, wasAudioUnlockedThisSession } from "@/lib/audio-alert-session";
-import { matchesListenTarget, resolveAlertKind } from "@/lib/calls";
+import { playBell, playVideoAlert, stopAlertLoop } from "@/lib/bell";
+import { resolveAlertKind } from "@/lib/calls";
 import {
   ROLE_LABELS,
   CALL_TYPE_LABELS,
   type StaffRole,
-  type CallType,
-  type CallStatus,
 } from "@/lib/types";
+import type { StaffActiveCall } from "@/context/StaffListenContext";
 import {
   staffAlert,
   staffBtnPrimary,
@@ -49,63 +43,26 @@ interface CatalogSector {
   label: string;
 }
 
-interface SerializedCall {
-  id: string;
-  roomNumber: string;
-  floor: string;
-  sector: string;
-  type: CallType;
-  targetRole: StaffRole;
-  status: string;
-  createdAt: string;
-}
-
 export default function DashboardPage() {
-  const { token, listenConfig, listening, saveListenConfig, clearListenConfig, setListening } =
+  const { token, listenConfig, listening, saveListenConfig, clearListenConfig } =
     useApp();
+  const {
+    calls,
+    pendingForListen,
+    audioReady,
+    enableAudioAlert,
+    setCallFromServer,
+    clearCalls,
+  } = useStaffListen();
   const [floor, setFloor] = useState(listenConfig?.floor ?? "");
   const [sector, setSector] = useState(listenConfig?.sector ?? "");
   const [role, setRole] = useState<StaffRole>(listenConfig?.role ?? "nurse");
   const [floors, setFloors] = useState<CatalogFloor[]>([]);
   const [sectors, setSectors] = useState<CatalogSector[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
-  const [calls, setCalls] = useState<SerializedCall[]>([]);
   const [saving, setSaving] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [audioReady, setAudioReady] = useState(false);
-
-  const pendingForListen = useMemo(() => {
-    if (!listenConfig) return [];
-    return calls.filter((call) =>
-      matchesListenTarget(
-        {
-          floor: call.floor,
-          sector: call.sector,
-          targetRole: call.targetRole,
-          status: call.status as CallStatus,
-        },
-        listenConfig.floor,
-        listenConfig.sector,
-        listenConfig.role,
-      ),
-    );
-  }, [calls, listenConfig]);
-
-  const loadCalls = useCallback(async () => {
-    if (!token || !listenConfig) return;
-    const params = new URLSearchParams({
-      floor: listenConfig.floor,
-      sector: listenConfig.sector,
-      role: listenConfig.role,
-    });
-    const res = await fetch(`/api/calls?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return;
-    const data = (await res.json()) as { calls: SerializedCall[] };
-    setCalls(data.calls);
-  }, [token, listenConfig]);
 
   const loadCatalog = useCallback(async () => {
     if (!token) return;
@@ -141,82 +98,8 @@ export default function DashboardPage() {
       setFloor(listenConfig.floor);
       setSector(listenConfig.sector);
       setRole(listenConfig.role);
-      void loadCalls();
     }
-  }, [listenConfig, loadCalls]);
-
-  useEffect(() => {
-    if (!token || !listenConfig) return;
-
-    const poll = window.setInterval(() => {
-      void loadCalls();
-    }, 4000);
-
-    return () => window.clearInterval(poll);
-  }, [token, listenConfig, loadCalls]);
-
-  useEffect(() => {
-    if (!token || !listenConfig) return;
-
-    const params = new URLSearchParams({
-      floor: listenConfig.floor,
-      sector: listenConfig.sector,
-      role: listenConfig.role,
-    });
-
-    const source = new EventSource(
-      `/api/calls/stream?${params.toString()}&token=${encodeURIComponent(token)}`,
-    );
-
-    setListening(true);
-
-    source.addEventListener("call:new", (event) => {
-      const call = JSON.parse(event.data) as SerializedCall;
-      setCalls((prev) => [call, ...prev.filter((c) => c.id !== call.id)]);
-    });
-
-    source.addEventListener("call:updated", (event) => {
-      const call = JSON.parse(event.data) as SerializedCall;
-      setCalls((prev) =>
-        call.status === "completed" || call.status === "cancelled"
-          ? prev.filter((c) => c.id !== call.id)
-          : prev.map((c) => (c.id === call.id ? call : c)),
-      );
-    });
-
-    return () => {
-      source.close();
-      setListening(false);
-    };
-  }, [token, listenConfig, setListening]);
-
-  useEffect(() => {
-    if (!audioReady || pendingForListen.length === 0) {
-      syncAlertLoop(null);
-      return;
-    }
-    syncAlertLoop(resolveAlertKind(pendingForListen));
-    return () => stopAlertLoop();
-  }, [audioReady, pendingForListen]);
-
-  useEffect(() => {
-    if (!listenConfig || audioReady || pendingForListen.length === 0) return;
-    if (!wasAudioUnlockedThisSession()) return;
-
-    const tryResume = () => {
-      void enableAlertAudio(setAudioReady);
-    };
-    window.addEventListener("pointerdown", tryResume, { once: true });
-    window.addEventListener("keydown", tryResume, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", tryResume);
-      window.removeEventListener("keydown", tryResume);
-    };
-  }, [listenConfig, audioReady, pendingForListen.length]);
-
-  async function enableAudioAlert(): Promise<void> {
-    await enableAlertAudio(setAudioReady);
-  }
+  }, [listenConfig]);
 
   async function handleDeactivate() {
     setDeactivating(true);
@@ -224,7 +107,7 @@ export default function DashboardPage() {
     stopAlertLoop();
     const err = await clearListenConfig();
     if (err) setError(err);
-    else setCalls([]);
+    else clearCalls();
     setDeactivating(false);
   }
 
@@ -261,13 +144,8 @@ export default function DashboardPage() {
       setError(data.error ?? "Error");
       return;
     }
-    const data = (await res.json()) as { call: SerializedCall };
-    const call = data.call;
-    setCalls((prev) =>
-      call.status === "completed" || call.status === "cancelled"
-        ? prev.filter((c) => c.id !== call.id)
-        : prev.map((c) => (c.id === call.id ? call : c)),
-    );
+    const data = (await res.json()) as { call: StaffActiveCall };
+    setCallFromServer(data.call);
   }
 
   const roles: StaffRole[] = ["nurse", "quality", "doctor"];
