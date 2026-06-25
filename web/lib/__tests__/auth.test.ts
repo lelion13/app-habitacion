@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { verifyPassword, hashPassword, signToken, verifyToken } from "../auth";
 import { hasAtLeastRole, isSystemRole, normalizeSystemRole } from "../system-roles";
-import { generateRoomKey } from "../room-key-gen";
+import { buildRoomKeyFromNumber, sanitizeRoomKeyPart } from "../room-key-gen";
 
 describe("auth", () => {
   it("hashes and verifies passwords", async () => {
@@ -39,10 +39,15 @@ describe("system-roles", () => {
 });
 
 describe("room-key-gen", () => {
-  it("generates unique room keys with prefix", () => {
-    const a = generateRoomKey();
-    const b = generateRoomKey();
-    expect(a).toMatch(/^room-[a-f0-9]{16}$/);
-    expect(a).not.toBe(b);
+  it("builds readable keys from room number", () => {
+    expect(buildRoomKeyFromNumber("101")).toBe("room-101-key");
+    expect(buildRoomKeyFromNumber("s1")).toBe("room-s1-key");
+    expect(buildRoomKeyFromNumber("Suite 1")).toBe("room-suite-1-key");
+    expect(buildRoomKeyFromNumber("101", 2)).toBe("room-101-2-key");
+  });
+
+  it("sanitizes room number slugs", () => {
+    expect(sanitizeRoomKeyPart("  201  ")).toBe("201");
+    expect(sanitizeRoomKeyPart("A-12")).toBe("a-12");
   });
 });

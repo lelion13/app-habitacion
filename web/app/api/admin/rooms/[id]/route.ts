@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
         updates.floorId = new ObjectId(floorId);
         updates.sectorId = new ObjectId(sectorId);
-        updates.floor = denorm.floorLabel;
+        updates.floor = denorm.floorName;
         updates.sector = denorm.sectorCode;
       } catch (error) {
         return NextResponse.json(

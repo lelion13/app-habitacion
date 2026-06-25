@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { runAdminMigrations } from "@/lib/admin-migrate";
-import { generateRoomKey } from "@/lib/room-key-gen";
+import { buildRoomKeyFromNumber } from "@/lib/room-key-gen";
 import type { Floor, Room, Sector, User } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     message: "Datos de prueba creados",
     user: { email: user.email, password: "admin123", systemRole: "admin" },
     rooms: rooms.map((r) => ({ label: r.label, roomKey: r.roomKey })),
-    sampleGeneratedRoomKey: generateRoomKey(),
+    sampleGeneratedRoomKey: buildRoomKeyFromNumber("999"),
   });
 }
 

@@ -6,7 +6,7 @@ export async function resolveFloorSectorDenorm(
   db: Db,
   floorId: ObjectId,
   sectorId: ObjectId,
-): Promise<{ floor: Floor; sector: Sector; floorLabel: string; sectorCode: string }> {
+): Promise<{ floor: Floor; sector: Sector; floorName: string; sectorCode: string }> {
   const [floor, sector] = await Promise.all([
     db.collection<Floor>("floors").findOne({ _id: floorId }),
     db.collection<Sector>("sectors").findOne({ _id: sectorId }),
@@ -28,7 +28,7 @@ export async function resolveFloorSectorDenorm(
   return {
     floor,
     sector,
-    floorLabel: floor.label.trim() || floor.name.trim(),
+    floorName: floor.name.trim(),
     sectorCode: sector.code.trim(),
   };
 }

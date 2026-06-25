@@ -71,11 +71,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     await db.collection<Floor>("floors").updateOne({ _id: floorId }, { $set: updates });
 
-    const nextLabel = updates.label ?? floor.label;
     const nextName = updates.name ?? floor.name;
     await db.collection("rooms").updateMany(
       { floorId },
-      { $set: { floor: nextLabel.trim() || nextName.trim(), updatedAt: new Date() } },
+      { $set: { floor: nextName.trim(), updatedAt: new Date() } },
     );
 
     const updated = await db.collection<Floor>("floors").findOne({ _id: floorId });

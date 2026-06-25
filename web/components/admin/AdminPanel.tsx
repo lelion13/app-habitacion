@@ -111,12 +111,13 @@ export function AdminPanel() {
 
   async function handleUserSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const formData = new FormData(formEl);
     const payload = {
-      email: String(form.get("email") ?? "").trim(),
-      name: String(form.get("name") ?? "").trim(),
-      systemRole: String(form.get("systemRole") ?? "user"),
-      password: String(form.get("password") ?? ""),
+      email: String(formData.get("email") ?? "").trim(),
+      name: String(formData.get("name") ?? "").trim(),
+      systemRole: String(formData.get("systemRole") ?? "user"),
+      password: String(formData.get("password") ?? ""),
     };
 
     try {
@@ -126,7 +127,7 @@ export function AdminPanel() {
           systemRole: payload.systemRole,
         };
         if (payload.password) body.password = payload.password;
-        const active = form.get("active") === "on";
+        const active = formData.get("active") === "on";
         body.active = active;
         await apiFetch(`/api/admin/users/${editingUserId}`, {
           method: "PATCH",
@@ -139,7 +140,7 @@ export function AdminPanel() {
         });
       }
       setEditingUserId(null);
-      event.currentTarget.reset();
+      formEl.reset();
       await loadAll();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar usuario");
@@ -148,10 +149,11 @@ export function AdminPanel() {
 
   async function handleFloorSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const formData = new FormData(formEl);
     const payload = {
-      name: String(form.get("name") ?? "").trim(),
-      label: String(form.get("label") ?? "").trim(),
+      name: String(formData.get("name") ?? "").trim(),
+      label: String(formData.get("label") ?? "").trim(),
     };
     try {
       if (editingFloorId) {
@@ -159,7 +161,7 @@ export function AdminPanel() {
           method: "PATCH",
           body: JSON.stringify({
             ...payload,
-            active: form.get("active") === "on",
+            active: formData.get("active") === "on",
           }),
         });
       } else {
@@ -169,7 +171,7 @@ export function AdminPanel() {
         });
       }
       setEditingFloorId(null);
-      event.currentTarget.reset();
+      formEl.reset();
       await loadAll();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar piso");
@@ -178,10 +180,11 @@ export function AdminPanel() {
 
   async function handleSectorSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const formData = new FormData(formEl);
     const payload = {
-      code: String(form.get("code") ?? "").trim(),
-      label: String(form.get("label") ?? "").trim(),
+      code: String(formData.get("code") ?? "").trim(),
+      label: String(formData.get("label") ?? "").trim(),
     };
     try {
       if (editingSectorId) {
@@ -189,7 +192,7 @@ export function AdminPanel() {
           method: "PATCH",
           body: JSON.stringify({
             ...payload,
-            active: form.get("active") === "on",
+            active: formData.get("active") === "on",
           }),
         });
       } else {
@@ -199,7 +202,7 @@ export function AdminPanel() {
         });
       }
       setEditingSectorId(null);
-      event.currentTarget.reset();
+      formEl.reset();
       await loadAll();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar sector");
@@ -208,12 +211,13 @@ export function AdminPanel() {
 
   async function handleRoomSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formEl = event.currentTarget;
+    const formData = new FormData(formEl);
     const payload = {
-      number: String(form.get("number") ?? "").trim(),
-      label: String(form.get("label") ?? "").trim(),
-      floorId: String(form.get("floorId") ?? ""),
-      sectorId: String(form.get("sectorId") ?? ""),
+      number: String(formData.get("number") ?? "").trim(),
+      label: String(formData.get("label") ?? "").trim(),
+      floorId: String(formData.get("floorId") ?? ""),
+      sectorId: String(formData.get("sectorId") ?? ""),
     };
     try {
       if (editingRoomId) {
@@ -221,7 +225,7 @@ export function AdminPanel() {
           method: "PATCH",
           body: JSON.stringify({
             ...payload,
-            active: form.get("active") === "on",
+            active: formData.get("active") === "on",
           }),
         });
       } else {
@@ -231,7 +235,7 @@ export function AdminPanel() {
         });
       }
       setEditingRoomId(null);
-      event.currentTarget.reset();
+      formEl.reset();
       await loadAll();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al guardar habitación");

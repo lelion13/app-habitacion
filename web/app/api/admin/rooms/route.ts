@@ -4,7 +4,7 @@ import { getDb } from "@/lib/db";
 import { resolveFloorSectorDenorm } from "@/lib/admin-catalog";
 import { isAuthError, requireAdmin } from "@/lib/admin-auth";
 import { serializeAdminRoom } from "@/lib/admin-migrate";
-import { generateRoomKey } from "@/lib/room-key-gen";
+import { allocateRoomKey } from "@/lib/room-key-gen";
 import { validateNonEmpty } from "@/lib/validation";
 import type { Room } from "@/lib/types";
 
@@ -66,12 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let roomKey = generateRoomKey();
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const exists = await db.collection<Room>("rooms").findOne({ roomKey });
-      if (!exists) break;
-      roomKey = generateRoomKey();
-    }
+    const roomKey = await allocateRoomKey(db, number);
 
     const now = new Date();
     const room: Omit<Room, "_id"> = {
@@ -79,7 +74,7 @@ export async function POST(request: NextRequest) {
       label,
       floorId: new ObjectId(floorId),
       sectorId: new ObjectId(sectorId),
-      floor: denorm.floorLabel,
+      floor: denorm.floorName,
       sector: denorm.sectorCode,
       roomKey,
       active: true,
