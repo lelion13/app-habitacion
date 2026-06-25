@@ -27,6 +27,9 @@ export const staffText = "text-sm text-[#7a9ab5]";
 export const staffBtnAction =
   "inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold";
 
+export const staffBtnStack =
+  "w-full inline-flex h-10 items-center justify-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold";
+
 export const staffBtnPrimary =
   `${staffBtnAction} bg-[#00bc7d] text-[#0d1b2a] hover:bg-[#5ee9b5] disabled:opacity-50`;
 
@@ -34,10 +37,19 @@ export const staffBtnSecondary =
   `${staffBtnAction} border border-white/15 font-medium text-[#f0f4f8] hover:bg-white/5 disabled:opacity-50`;
 
 export const staffBtnGhost =
-  `${staffBtnAction} border border-white/15 px-3 font-medium text-[#7a9ab5] hover:bg-white/5 hover:text-[#f0f4f8]`;
+  `${staffBtnAction} border border-white/15 font-medium text-[#7a9ab5] hover:bg-white/5 hover:text-[#f0f4f8]`;
 
 export const staffBtnDanger =
   `${staffBtnAction} border border-red-400/35 font-medium text-red-300 hover:bg-red-500/10 disabled:opacity-50`;
+
+export const staffBtnStackPrimary =
+  `${staffBtnStack} bg-[#00bc7d] text-[#0d1b2a] hover:bg-[#5ee9b5] disabled:opacity-50`;
+
+export const staffBtnStackGhost =
+  `${staffBtnStack} border border-white/15 font-medium text-[#7a9ab5] hover:bg-white/5 hover:text-[#f0f4f8]`;
+
+export const staffBtnStackDanger =
+  `${staffBtnStack} border border-red-400/35 font-medium text-red-300 hover:bg-red-500/10 disabled:opacity-50`;
 
 export const staffTabActive =
   "rounded-lg bg-[#00bc7d]/20 px-4 py-2 text-sm font-semibold text-[#5ee9b5] ring-1 ring-[#00bc7d]/40";

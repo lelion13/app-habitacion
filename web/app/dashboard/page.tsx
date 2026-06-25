@@ -22,10 +22,11 @@ import {
 } from "@/lib/types";
 import {
   staffAlert,
-  staffBtnDanger,
-  staffBtnGhost,
   staffBtnPrimary,
   staffBtnSecondary,
+  staffBtnStackDanger,
+  staffBtnStackGhost,
+  staffBtnStackPrimary,
   staffCard,
   staffContent,
   staffEmpty,
@@ -35,6 +36,18 @@ import {
   staffSuccess,
   staffText,
 } from "@/lib/staff-theme";
+
+interface CatalogFloor {
+  id: string;
+  name: string;
+  label: string;
+}
+
+interface CatalogSector {
+  id: string;
+  code: string;
+  label: string;
+}
 
 interface SerializedCall {
   id: string;
@@ -48,10 +61,14 @@ interface SerializedCall {
 }
 
 export default function DashboardPage() {
-  const { token, listenConfig, saveListenConfig, clearListenConfig, setListening } = useApp();
-  const [floor, setFloor] = useState(listenConfig?.floor ?? "1");
-  const [sector, setSector] = useState(listenConfig?.sector ?? "A");
+  const { token, listenConfig, listening, saveListenConfig, clearListenConfig, setListening } =
+    useApp();
+  const [floor, setFloor] = useState(listenConfig?.floor ?? "");
+  const [sector, setSector] = useState(listenConfig?.sector ?? "");
   const [role, setRole] = useState<StaffRole>(listenConfig?.role ?? "nurse");
+  const [floors, setFloors] = useState<CatalogFloor[]>([]);
+  const [sectors, setSectors] = useState<CatalogSector[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
   const [calls, setCalls] = useState<SerializedCall[]>([]);
   const [saving, setSaving] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
@@ -89,6 +106,35 @@ export default function DashboardPage() {
     const data = (await res.json()) as { calls: SerializedCall[] };
     setCalls(data.calls);
   }, [token, listenConfig]);
+
+  const loadCatalog = useCallback(async () => {
+    if (!token) return;
+    setCatalogLoading(true);
+    try {
+      const res = await fetch("/api/staff/catalog", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        floors: CatalogFloor[];
+        sectors: CatalogSector[];
+      };
+      setFloors(data.floors);
+      setSectors(data.sectors);
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void loadCatalog();
+  }, [loadCatalog]);
+
+  useEffect(() => {
+    if (catalogLoading || listenConfig) return;
+    if (floors.length > 0 && !floor) setFloor(floors[0].name);
+    if (sectors.length > 0 && !sector) setSector(sectors[0].code);
+  }, [catalogLoading, floors, sectors, floor, sector, listenConfig]);
 
   useEffect(() => {
     if (listenConfig) {
@@ -276,21 +322,65 @@ export default function DashboardPage() {
       >
         <div>
           <label className={staffLabel}>Piso</label>
-          <input
+          <select
             value={floor}
             onChange={(e) => setFloor(e.target.value)}
             className={`mt-1 w-full ${staffInput}`}
             required
-          />
+            disabled={catalogLoading || floors.length === 0}
+          >
+            {catalogLoading && (
+              <option value="" className="bg-[#132337]">
+                Cargando…
+              </option>
+            )}
+            {!catalogLoading && floors.length === 0 && (
+              <option value="" className="bg-[#132337]">
+                Sin pisos configurados
+              </option>
+            )}
+            {floor && !floors.some((f) => f.name === floor) && (
+              <option value={floor} className="bg-[#132337]">
+                {floor}
+              </option>
+            )}
+            {floors.map((f) => (
+              <option key={f.id} value={f.name} className="bg-[#132337]">
+                {f.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className={staffLabel}>Sector</label>
-          <input
+          <select
             value={sector}
             onChange={(e) => setSector(e.target.value)}
             className={`mt-1 w-full ${staffInput}`}
             required
-          />
+            disabled={catalogLoading || sectors.length === 0}
+          >
+            {catalogLoading && (
+              <option value="" className="bg-[#132337]">
+                Cargando…
+              </option>
+            )}
+            {!catalogLoading && sectors.length === 0 && (
+              <option value="" className="bg-[#132337]">
+                Sin sectores configurados
+              </option>
+            )}
+            {sector && !sectors.some((s) => s.code === sector) && (
+              <option value={sector} className="bg-[#132337]">
+                {sector}
+              </option>
+            )}
+            {sectors.map((s) => (
+              <option key={s.id} value={s.code} className="bg-[#132337]">
+                {s.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className={staffLabel}>Rol</label>
@@ -306,29 +396,36 @@ export default function DashboardPage() {
             ))}
           </select>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="flex flex-col gap-2 md:min-w-[11.5rem]">
           <button
             type="button"
             onClick={() => void handleTestSound()}
-            className={staffBtnGhost}
+            className={staffBtnStackGhost}
           >
             Probar sonido
           </button>
-          <button
-            type="submit"
-            disabled={saving || deactivating}
-            className={`flex-1 ${staffBtnPrimary}`}
-          >
-            {saving ? "Guardando…" : "Activar escucha"}
-          </button>
-          {listenConfig && (
+          {listening ? (
             <button
               type="button"
               disabled={deactivating || saving}
               onClick={() => void handleDeactivate()}
-              className={staffBtnDanger}
+              className={staffBtnStackDanger}
             >
               {deactivating ? "Desactivando…" : "Desactivar escucha"}
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={
+                saving ||
+                deactivating ||
+                catalogLoading ||
+                !floor ||
+                !sector
+              }
+              className={staffBtnStackPrimary}
+            >
+              {saving ? "Guardando…" : "Activar escucha"}
             </button>
           )}
         </div>
