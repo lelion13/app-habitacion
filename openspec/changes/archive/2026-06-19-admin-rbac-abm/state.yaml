@@ -1,0 +1,12 @@
+change: admin-rbac-abm
+status: archived
+archived: 2026-06-19
+phase: done
+created: 2026-06-19
+domains:
+  - auth
+  - rooms
+  - ui
+requirement: |
+  RBAC user/supervisor/admin, ABM, dashboard staff shell oscuro,
+  roomKey legible, escucha persistente, catálogo staff.

@@ -1,0 +1,15 @@
+change: telegram-call-actions
+status: implemented
+phase: verify
+created: 2026-06-19
+domains:
+  - auth
+  - calls
+  - realtime
+  - ui
+decisions:
+  video_approach: magic_link
+  bell_actions: accept_complete
+  who_can_act: listen_active
+  multi_staff: first_wins
+  message_updates: edit_message

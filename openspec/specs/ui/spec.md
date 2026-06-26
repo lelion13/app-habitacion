@@ -63,18 +63,18 @@ The main call UI MUST fit within `100dvh` without horizontal or vertical scrolli
 ### REQ-UI-003: Dashboard login
 Route `/dashboard/login` MUST authenticate staff. Redirect to `/dashboard` when session exists MUST occur in `useEffect` (not during render).
 
-### REQ-UI-004: Dashboard escucha
+### REQ-UI-004: Dashboard escucha (Llamador)
 Route `/dashboard` MUST:
-- Allow configuring floor, sector, role and saving listen session
+- Allow configuring floor, sector (from `GET /api/staff/catalog`), and role; saving via PUT `/api/staff/session`
+- Deactivate listen via DELETE `/api/staff/session` (toggle button **Desactivar escucha** when SSE connected)
 - List active calls with accept, cancel, complete actions
-- Subscribe to staff SSE
-- **Play repeating alert** while at least one `pending` call matches listen config (`floor`, `sector`, `targetRole`)
-- Alert MUST apply to both `bell` and `video` types
-- Alert MUST stop when no matching `pending` calls remain (all terminal or accepted-only)
-- Provide **Probar timbre** to unlock browser audio
+- Subscribe to staff SSE via global `StaffListenProvider` (persists across staff shell tabs)
+- **Play repeating alert** while at least one `pending` call matches listen config
+- Provide stacked full-width buttons: **Probar sonido** and **Activar escucha** / **Desactivar escucha**
 - Unlock audio on **Activar escucha** (user gesture)
 - Link **Abrir video** for accepted video calls
-- Link to **`/estadisticas`**
+
+Shell navigation (not body links) MUST expose **Estadísticas** for supervisor+ and **Administración** for admin.
 
 #### Scenario: Video pending alerta
 - **GIVEN** listen config matches a pending video call
@@ -140,17 +140,16 @@ During an active video session, both room and staff clients MUST use the same la
 - **AND** the video stage MUST NOT shrink when the control is shown
 
 ### REQ-UI-006: Diseño
-The UI MUST follow microprompt guidelines on dashboard routes:
-- Light background, dark text (staff video overlay: dark fullscreen)
-- Accent `#0d9488`
-- No decorative photographic images; CSS/SVG icons for actions; institution logo MAY appear in header (`InstitutionBrand`)
-- Mobile-first responsive layout
+Staff dashboard routes (`/dashboard`, `/dashboard/login`, `/dashboard/admin`, `/estadisticas`) MUST use **dark staff theme** (`#0d1b2a`, accent `#00bc7d`) via `staff-theme.ts`, aligned with habitacion palette.
+
+Staff video overlay (`/dashboard/video/[callId]`) MAY use dark fullscreen shell.
 
 **`/habitacion` only** (dark habitacion theme):
 - Background `#0d1b2a`, foreground `#f0f4f8`, muted `#7a9ab5`
-- Role accents: nurse `#5ee9b5`, quality `#ffd230`, doctor `#74d4ff` (section borders/backgrounds per Figma Design `0S2BGDsyMvuF24YFo3bkqj`)
+- Role accents: nurse `#5ee9b5`, quality `#ffd230`, doctor `#74d4ff`
 - Nunito typography via `app/habitacion/layout.tsx`
-- Dashboard, login, and estadísticas retain existing light theme
+
+Microprompt on staff routes: mobile-first, institution logo in shell header, CSS/SVG icons.
 
 ### REQ-UI-007: Protección rutas dashboard
 Dashboard routes (except login) MUST redirect unauthenticated users to `/dashboard/login` via layout guard (not Next.js middleware).
@@ -207,14 +206,19 @@ Room and staff video screens MUST use the same layout component/shell so behavio
 
 ### REQ-UI-014: Pantalla estadísticas
 
-Route `/estadisticas` MUST require staff authentication (same JWT session as dashboard).
+Route `/estadisticas` MUST require `systemRole` of `supervisor` or `admin` (redirect `user` to `/dashboard`).
 
-The page MUST:
+The page MUST use the shared staff shell and:
 - Show KPI summary cards driven by active filters (totals, avg response time, avg session duration, bell vs video counts)
 - Show paginated table of calls with: room, floor, sector, type, target role, status, timestamps, `responseTimeMs`, `totalDurationMs`, `sessionDurationMs`
 - Provide filters: date range, floor, sector, target role, room number, type, status
 - Default date range SHOULD be last 7 days
 - Be mobile-first responsive
+
+#### Scenario: Acceso sin permiso
+- **GIVEN** authenticated `systemRole: user`
+- **WHEN** user opens `/estadisticas`
+- **THEN** redirect to `/dashboard`
 
 #### Scenario: Acceso sin sesión
 - **WHEN** unauthenticated user opens `/estadisticas`
@@ -240,16 +244,16 @@ Alert loop interval SHOULD be 5–8 seconds. Only one loop instance MUST run at 
 
 ### REQ-UI-016: Vinculación Telegram en dashboard
 
-The dashboard MUST expose Telegram notification settings for authenticated staff.
+Telegram link/unlink MUST be available from the **user menu dropdown** in the staff shell header (not as a standalone card on the Llamador page).
 
 #### Scenario: No vinculado
 - **GIVEN** user without `telegramChatId`
-- **WHEN** viewing dashboard
-- **THEN** UI SHALL show instructions and button **Conectar Telegram** that requests link and opens `t.me` URL
+- **WHEN** user opens the user menu
+- **THEN** UI SHALL show **Conectar Telegram** that requests link and opens `t.me` URL
 
 #### Scenario: Vinculado
 - **GIVEN** linked user
-- **WHEN** viewing settings
+- **WHEN** user opens the user menu
 - **THEN** UI SHALL show connected state and option to **Desvincular**
 
 #### Scenario: Mobile-friendly
@@ -305,6 +309,46 @@ Route `/habitacion` SHOULD implement UI via scoped components:
 | `InstallRoomBanner` | PWA install CTA (sky tint) |
 | `RoomUnconfiguredScreen` | Dark support screen |
 
+### REQ-UI-021: Shell dashboard staff
+
+Authenticated staff routes (`/dashboard`, `/dashboard/admin`, `/estadisticas`) MUST use `DashboardShell` with:
+
+1. Header: institution logo, listen status (En línea / Fuera de línea), user menu
+2. Tab navigation: **Llamador**, **Administración** (admin only), **Estadísticas** (supervisor+)
+
+ABM MUST NOT be linked from habitación routes.
+
+#### Scenario: admin ve pestaña ABM
+- **GIVEN** `systemRole: admin`
+- **WHEN** viewing any staff shell page
+- **THEN** Administración tab MUST be visible
+
+#### Scenario: user no ve admin
+- **GIVEN** `systemRole: user`
+- **WHEN** viewing staff shell
+- **THEN** Administración tab MUST NOT appear
+
+### REQ-UI-022: Pantalla admin con pestañas
+
+Route `/dashboard/admin` MUST present tabbed ABM: Usuarios, Pisos, Sectores, Habitaciones.
+
+Habitación form MUST show `roomKey` read-only after creation.
+
+### REQ-UI-023: Estadísticas por rol
+
+`/estadisticas` tab MUST be visible only for `supervisor` and `admin`.
+
+### REQ-UI-024: Habitación inactiva — mensaje UI
+
+When room is inactive, `/habitacion` MUST display a prominent inactive message; call buttons MUST be disabled.
+
+### REQ-UI-025: Escucha persistente entre pestañas
+
+#### Scenario: escucha persiste entre pestañas
+- **GIVEN** user activated listen on Llamador
+- **WHEN** navigating to Administración or Estadísticas without deactivating
+- **THEN** header MUST still show **En línea** (SSE via `StaffListenProvider` in root layout)
+
 ## Audio (bell)
 
 - Implementation: Web Audio API via `lib/bell.ts` (`playBell`, `playVideoAlert`, `startAlertLoop`, `stopAlertLoop`, `syncAlertLoop`)
@@ -317,14 +361,14 @@ Route `/habitacion` SHOULD implement UI via scoped components:
 | Modo kiosko — salir solo con PIN soporte | Medium | ui |
 | TURN server (NAT estricto) | High | calls + deploy |
 | Service worker offline / cache | Medium | ui |
-| Admin CRUD rooms/users | Medium | rooms + auth |
 | Notificaciones push (FCM) | Low | realtime |
 | Notificaciones Telegram inline buttons | Low | calls + ui |
+| Auto-desactivar escucha en logout | Low | auth |
 
 ## Tests
 
 | Type | Scope |
 |------|-------|
-| Jest | `lib/auth`, `lib/validation`, `lib/calls`, `lib/bell`, `lib/webrtc-signal`, `lib/telegram`, `lib/room-bind`, `lib/room-manifest`, `lib/call-metrics`, `lib/call-history` |
+| Jest | `lib/auth`, `lib/validation`, `lib/calls`, `lib/bell`, `lib/webrtc-signal`, `lib/telegram`, `lib/room-bind`, `lib/room-manifest`, `lib/call-metrics`, `lib/call-history`, `lib/room-key-gen`, `lib/system-roles` |
 | Playwright | Landing, login page, habitacion load |
 | Manual | Bell/video alert loop, SSE, PWA install, video bidireccional prod, `/estadisticas` |

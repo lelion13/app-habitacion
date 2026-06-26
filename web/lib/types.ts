@@ -61,6 +61,22 @@ export interface TelegramLinkToken {
   createdAt: Date;
 }
 
+export interface TelegramVideoJoinToken {
+  _id?: ObjectId;
+  token: string;
+  callId: ObjectId;
+  userId: ObjectId;
+  expiresAt: Date;
+  used: boolean;
+  createdAt: Date;
+}
+
+export interface CallTelegramAlert {
+  userId: ObjectId;
+  chatId: string;
+  messageId: number;
+}
+
 export interface StaffSession {
   _id?: ObjectId;
   userId: ObjectId;
@@ -92,6 +108,7 @@ export interface Call {
     answer?: string;
     iceCandidates?: string[];
   };
+  telegramAlerts?: CallTelegramAlert[];
 }
 
 export interface ListenConfig {

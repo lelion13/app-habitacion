@@ -41,16 +41,19 @@ Additionally, the room client MUST persist a validated `roomKey` in browser `loc
 ### REQ-ROOM-002: Modelo de datos
 Each room document MUST contain:
 - `number` (string)
-- `floor` (string)
-- `sector` (string)
-- `roomKey` (string, unique)
 - `label` (string, display name)
+- `roomKey` (string, unique)
+- `floorId`, `sectorId` (ObjectId refs to `floors` / `sectors`)
+- `floor` (string, denormalized from `floor.name`)
+- `sector` (string, denormalized from `sector.code`)
+- `active` (boolean, default true)
+- `createdAt`, `updatedAt` (optional timestamps)
 
 ### REQ-ROOM-003: Sin autenticación en habitación
 The room client MUST NOT require user login. Authorization for call actions SHALL be implicit via possession of the correct `roomKey`.
 
 ### REQ-ROOM-004: Seed de desarrollo
-In non-production (or when `BOOTSTRAP_ENABLED=true`), POST `/api/seed` with header `x-seed-secret` matching `JWT_SECRET` MUST create demo rooms and admin user.
+In non-production (or when `BOOTSTRAP_ENABLED=true`), POST `/api/seed` with header `x-seed-secret` matching `JWT_SECRET` MUST create demo floors, sectors, rooms and admin user with `systemRole: admin`.
 
 Demo rooms:
 | label | floor | sector | roomKey |
@@ -88,7 +91,54 @@ The system MUST expose a Web App Manifest per validated `roomKey` for PWA instal
 - **GIVEN** no `?key=` and no stored `roomKey`
 - **WHEN** `/habitacion` loads
 - **THEN** UI MUST show support message without editable key field
-- **AND** MUST NOT expose example URLs to end user
+- **AND** MUST NOT show example URLs to end user
+
+### REQ-ROOM-009: Catálogos piso y sector
+
+The system MUST persist floors and sectors as separate MongoDB collections.
+
+Admin MUST CRUD floors and sectors (soft-delete via `active: false`).
+
+Rooms MUST reference `floorId` and `sectorId` and SHALL denormalize `floor` and `sector` strings for call routing and historial.
+
+Authenticated staff (any role) MAY read active floors/sectors via `GET /api/staff/catalog`.
+
+#### Scenario: Desactivar piso con habitaciones activas
+- **GIVEN** an active floor linked to active rooms
+- **WHEN** admin deactivates the floor
+- **THEN** API MUST return 409 with clear error
+
+### REQ-ROOM-010: ABM habitaciones (admin)
+
+Admin MUST create, update, and soft-deactivate rooms via `/api/admin/rooms`.
+
+On create, `roomKey` MUST be generated server-side from room **number** using format `room-{slug}-key` (with numeric suffix on collision) and MUST NOT be editable afterward.
+
+#### Scenario: roomKey legible
+- **GIVEN** admin creates room number `101`
+- **WHEN** POST `/api/admin/rooms` succeeds
+- **THEN** `roomKey` SHALL be `room-101-key` (or suffixed variant if collision)
+
+#### Scenario: roomKey automático
+- **GIVEN** admin creates a room
+- **WHEN** POST `/api/admin/rooms` succeeds
+- **THEN** response SHALL include unique `roomKey`
+- **AND** PATCH MUST NOT allow changing `roomKey`
+
+### REQ-ROOM-011: Habitación inactiva
+
+When `room.active === false`:
+
+#### Scenario: Tablet ve habitación inactiva
+- **GIVEN** valid `roomKey` for inactive room
+- **WHEN** GET `/api/room?key=...`
+- **THEN** response MAY return room data with inactive indicator
+- **AND** habitación UI MUST show clear inactive message
+
+#### Scenario: No llamar desde inactiva
+- **GIVEN** inactive room
+- **WHEN** POST `/api/calls` with that `roomKey`
+- **THEN** response MUST be 403 with generic inactive message
 
 ## URLs prod (tablets)
 
@@ -100,6 +150,5 @@ https://habitacion.lionapp.cloud/habitacion?key=room-201-key
 
 ## Out of scope
 
-- UI admin para CRUD de habitaciones
-- Rotación de roomKey
+- Rotación manual de roomKey / rebind tablet
 - Vinculación roomKey a hardware (MAC, serial)

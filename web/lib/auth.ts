@@ -9,6 +9,8 @@ export interface JwtPayload {
   email: string;
   name: string;
   systemRole: SystemRole;
+  scope?: "video-join";
+  callId?: string;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -30,6 +32,22 @@ export function signToken(user: AuthUser): string {
     systemRole: user.systemRole,
   };
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "12h" });
+}
+
+export function signVideoJoinToken(user: AuthUser, callId: string): string {
+  const payload: JwtPayload = {
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    systemRole: user.systemRole,
+    scope: "video-join",
+    callId,
+  };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
+}
+
+export function isVideoJoinPayload(payload: JwtPayload): boolean {
+  return payload.scope === "video-join" && Boolean(payload.callId);
 }
 
 export function verifyToken(token: string): JwtPayload | null {

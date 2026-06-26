@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + PWA tablet por habitación + historial `/estadisticas` + **UI oscura habitación (Figma) con modales de llamada** operativos.
+**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + PWA tablet + historial `/estadisticas` + UI oscura habitación + **dashboard staff (RBAC, ABM, shell oscuro, escucha persistente)**.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -23,6 +23,12 @@ Guía rápida para orientarse en el repo y en SDD.
 | Room bind / manifest PWA | `web/lib/room-bind.ts`, `web/lib/room-manifest.ts`, `web/app/api/manifest/` |
 | Branding institución | `web/components/InstitutionBrand.tsx`, `web/public/branding/` |
 | Dashboard | `web/app/dashboard/` |
+| Shell / tema staff | `web/components/dashboard/`, `web/lib/staff-theme.ts` |
+| Escucha global (SSE) | `web/context/StaffListenContext.tsx`, `web/components/StaffListenBridge.tsx` |
+| ABM admin | `web/app/dashboard/admin/`, `web/app/api/admin/`, `web/components/admin/AdminPanel.tsx` |
+| RBAC / migración | `web/lib/system-roles.ts`, `web/lib/admin-auth.ts`, `web/lib/admin-migrate.ts` |
+| roomKey legible | `web/lib/room-key-gen.ts` |
+| Catálogo staff | `web/app/api/staff/catalog/` |
 | Estadísticas / historial | `web/app/estadisticas/`, `web/app/api/calls/history/` |
 | Métricas llamados | `web/lib/call-metrics.ts`, `web/lib/call-history.ts` |
 | Alerta persistente | `web/lib/bell.ts` (`startAlertLoop`, `playVideoAlert`) |
@@ -58,12 +64,11 @@ Guía rápida para orientarse en el repo y en SDD.
 | [telegram-staff-alerts](../openspec/changes/archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram si escucha activa + vinculado |
 | [pwa-tablet-room-bind](../openspec/changes/archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, manifest dinámico, fullscreen |
 | [call-alerts-and-history](../openspec/changes/archive/2026-06-22-call-alerts-and-history/) | 2026-06-22 | Alerta persistente bell/video + historial `/estadisticas` |
+| [admin-rbac-abm](../openspec/changes/archive/2026-06-19-admin-rbac-abm/) | 2026-06-19 | RBAC + ABM + shell staff oscuro + escucha persistente |
 
 ## Changes activos
 
-| Change | Resumen |
-|--------|---------|
-| [admin-rbac-abm](../openspec/changes/admin-rbac-abm/) | RBAC user/supervisor/admin + ABM desde `/dashboard/admin` |
+_Ninguno._
 
 ## Docs operativos
 

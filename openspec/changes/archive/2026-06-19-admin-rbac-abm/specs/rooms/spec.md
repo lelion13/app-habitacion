@@ -19,7 +19,12 @@ Rooms MUST reference `floorId` and `sectorId` and SHALL denormalize `floor` and 
 
 Admin MUST create, update, and soft-deactivate rooms.
 
-On create, `roomKey` MUST be generated server-side and MUST NOT be editable afterward.
+On create, `roomKey` MUST be generated server-side from room **number** using format `room-{slug}-key` (with numeric suffix on collision) and MUST NOT be editable afterward.
+
+#### Scenario: roomKey legible
+- **GIVEN** admin creates room number `101`
+- **WHEN** POST `/api/admin/rooms` succeeds
+- **THEN** `roomKey` SHALL be `room-101-key` (or suffixed variant if collision)
 
 #### Scenario: roomKey automático
 - **GIVEN** admin creates a room
@@ -49,7 +54,7 @@ When `room.active === false`:
 Each room document MUST contain:
 - `number`, `label`, `roomKey` (unique)
 - `floorId`, `sectorId` (ObjectId refs)
-- `floor`, `sector` (denormalized strings)
+- `floor`, `sector` (denormalized strings; `floor` = `floor.name`)
 - `active` (boolean, default true)
 
 ### REQ-ROOM-004: Seed de desarrollo

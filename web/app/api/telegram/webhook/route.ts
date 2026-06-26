@@ -3,13 +3,27 @@ import {
   consumeTelegramLinkToken,
   parseStartLinkPayload,
 } from "@/lib/telegram-link";
-import { sendTelegramMessage } from "@/lib/telegram";
+import {
+  answerCallbackQuery,
+  sendTelegramMessage,
+} from "@/lib/telegram";
+import {
+  handleTelegramAccept,
+  handleTelegramComplete,
+  parseTelegramCallbackData,
+} from "@/lib/telegram-call-actions";
 
 interface TelegramUpdate {
   message?: {
     chat: { id: number };
     from?: { username?: string };
     text?: string;
+  };
+  callback_query?: {
+    id: string;
+    data?: string;
+    message?: { chat: { id: number } };
+    from?: { id: number };
   };
 }
 
@@ -28,6 +42,25 @@ export async function POST(request: NextRequest) {
   try {
     update = (await request.json()) as TelegramUpdate;
   } catch {
+    return NextResponse.json({ ok: true });
+  }
+
+  const callback = update.callback_query;
+  if (callback?.data && callback.id) {
+    const parsed = parseTelegramCallbackData(callback.data);
+    const chatId = String(callback.message?.chat.id ?? callback.from?.id ?? "");
+
+    if (!parsed || !chatId) {
+      await answerCallbackQuery(callback.id, "Acción no válida.");
+      return NextResponse.json({ ok: true });
+    }
+
+    const result =
+      parsed.action === "accept"
+        ? await handleTelegramAccept(chatId, parsed.callId)
+        : await handleTelegramComplete(chatId, parsed.callId);
+
+    await answerCallbackQuery(callback.id, result.message);
     return NextResponse.json({ ok: true });
   }
 

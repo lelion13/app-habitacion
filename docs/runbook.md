@@ -59,10 +59,25 @@ La migración de roles y catálogos piso/sector corre automáticamente al **logi
 
 ### ABM (solo admin)
 
-1. Dashboard home → **Administración**
-2. Pestañas: Usuarios, Pisos, Sectores, Habitaciones
-3. Habitación nueva: `roomKey` se genera solo; copiarlo para la tablet `?key=`
+1. Pestaña **Administración** en el shell del dashboard
+2. Sub-pestañas: Usuarios, Pisos, Sectores, Habitaciones
+3. Habitación nueva: `roomKey` formato `room-{número}-key` (ej. `room-101-key`); copiar para tablet `?key=`
 4. Habitación inactiva: la tablet muestra aviso y no puede llamar
+
+### Dashboard staff (shell)
+
+Tema oscuro alineado con tablet (`#0d1b2a`). Rutas: `/dashboard` (Llamador), `/dashboard/admin`, `/estadisticas`.
+
+| Elemento | Descripción |
+|----------|-------------|
+| Header | Logo, estado **En línea** / Fuera de línea, menú usuario |
+| Pestañas | Llamador · Administración (admin) · Estadísticas (supervisor+) |
+| Menú usuario | Telegram (conectar/desvincular), cerrar sesión |
+| Llamador | Piso/Sector desde catálogo ABM; botones **Probar sonido** y **Activar/Desactivar escucha** |
+
+La escucha (SSE + alertas) permanece activa al cambiar de pestaña mientras no se desactive.
+
+**Importante:** cerrar sesión **no** desactiva la escucha en servidor. Si no querés alertas Telegram fuera del dashboard, usá **Desactivar escucha** antes de salir.
 
 ### Prod sin re-seed
 
@@ -72,7 +87,7 @@ Si ya hay datos en Mongo, basta con que un usuario haga login (migración idempo
 
 ```bash
 cd web
-npm run test:unit    # 16 tests
+npm run test:unit    # 37 tests
 npm run build
 npm run test:e2e     # requiere MongoDB + dev server
 ```
@@ -134,7 +149,7 @@ Tras deploy de cambios PWA: eliminar ícono anterior y reinstalar desde URL con 
 
 ## Estadísticas (`/estadisticas`)
 
-Requiere login staff. Filtros por fechas, piso, sector, rol, habitación, tipo y estado. KPIs + tabla paginada con métricas (`responseTimeMs`, `totalDurationMs`, `sessionDurationMs`).
+Requiere `systemRole` **supervisor** o **admin**. Filtros por fechas, piso, sector, rol, habitación, tipo y estado. KPIs + tabla paginada con métricas (`responseTimeMs`, `totalDurationMs`, `sessionDurationMs`).
 
 ## Índices Mongo (historial)
 

@@ -5,6 +5,7 @@ import { metricsOnTerminal } from "@/lib/call-metrics";
 import { resolveRoomKey } from "@/lib/room-key";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
 import { clearSignalBuffer } from "@/lib/signal-buffer";
+import { syncTelegramMessagesForCall } from "@/lib/telegram-call-actions";
 import type { Call, Room } from "@/lib/types";
 
 async function resolveRoom(roomKey: string): Promise<Room | null> {
@@ -108,6 +109,8 @@ export async function PATCH(request: NextRequest) {
       serialized,
     );
     publishRoomEvent(room._id!.toString(), "call:updated", serialized);
+
+    void syncTelegramMessagesForCall(updated).catch(() => {});
 
     return NextResponse.json({ call: serialized });
   } catch {

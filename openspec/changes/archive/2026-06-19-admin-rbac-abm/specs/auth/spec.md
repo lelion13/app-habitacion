@@ -58,6 +58,22 @@ Admin MUST manage users via authenticated admin APIs:
 - **WHEN** any user API responds
 - **THEN** `passwordHash` MUST NOT be included
 
+### REQ-AUTH-011: Escucha staff — sesión servidor vs browser
+
+`staff_sessions` with `active: true` represents an activated listen zone on the server.
+
+- `PUT /api/staff/session` activates listen
+- `DELETE /api/staff/session` deactivates listen
+- Client `logout` clears local token only; it MUST NOT implicitly deactivate `staff_sessions` (documented behavior)
+
+Telegram notifications for calls MUST use active `staff_sessions` matching call floor/sector/role, not browser SSE state.
+
+#### Scenario: logout sin desactivar
+- **GIVEN** user activated listen and linked Telegram
+- **WHEN** user logs out without pressing Desactivar escucha
+- **THEN** `staff_sessions` MAY remain active
+- **AND** Telegram notifications MAY still be sent for matching calls
+
 ## MODIFIED Requirements
 
 ### REQ-AUTH-005: Estado cliente

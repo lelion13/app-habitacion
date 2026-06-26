@@ -1,7 +1,7 @@
 # Proposal — RBAC + ABM administración
 
 **Change:** admin-rbac-abm  
-**Status:** Propuesta cerrada — pendiente specs finales + implementación  
+**Status:** Implementado — ver `verify-report.md`  
 **Dominios:** `auth`, `rooms`, `ui`
 
 ## Intent
@@ -23,12 +23,16 @@ Hoy pisos, sectores y habitaciones se cargan por seed; no hay roles de sistema n
 | Tema | Decisión |
 |------|----------|
 | Pisos / sectores | Colecciones `floors` y `sectors`; habitaciones referencian por `floorId` / `sectorId` |
-| `roomKey` | Auto-generado al crear; solo lectura en UI |
+| `roomKey` | Auto-generado al crear (`room-{número}-key`); solo lectura en UI; sufijo si colisión |
 | Bajas | Baja lógica (`active: false`) en todas las entidades ABM |
 | Habitación inactiva | Tablet resuelve habitación; mensaje claro; **no** puede iniciar llamados |
 | Contraseñas | Admin define al crear y puede resetear al editar |
-| UI ABM | `/dashboard/admin` con **pestañas** (Usuarios, Pisos, Sectores, Habitaciones) |
-| Acceso ABM | Solo enlace/tarjeta desde **home** del dashboard; solo rol `admin` |
+| UI ABM | `/dashboard/admin` con **pestañas**; acceso vía pestaña **Administración** en shell |
+| Acceso ABM | Pestaña shell solo rol `admin` |
+| Dashboard shell | Tema oscuro `#0d1b2a`; pestañas Llamador / Administración / Estadísticas |
+| Telegram UI | Dropdown en menú usuario (no card en body del Llamador) |
+| Escucha | SSE global mientras hay sesión; “En línea” en todas las pestañas staff |
+| Logout sin desactivar | Sesión `staff_sessions` permanece activa (Telegram puede seguir notificando) |
 | Estadísticas | Solo `supervisor` y `admin`; ocultar enlace para `user` |
 
 ## Scope
@@ -91,9 +95,11 @@ Hoy pisos, sectores y habitaciones se cargan por seed; no hay roles de sistema n
 
 ## Success criteria
 
-- [ ] `user` no accede `/estadisticas` ni `/dashboard/admin`
-- [ ] `supervisor` accede estadísticas, no ABM
-- [ ] `admin` gestiona los 4 ABM desde tabs
-- [ ] Habitación inactiva bloquea llamados con mensaje claro
-- [ ] `roomKey` generado automáticamente
-- [ ] `npm run test:unit` + `npm run build` OK
+- [x] `user` no accede `/estadisticas` ni `/dashboard/admin`
+- [x] `supervisor` accede estadísticas, no ABM
+- [x] `admin` gestiona los 4 ABM desde tabs
+- [x] Habitación inactiva bloquea llamados con mensaje claro
+- [x] `roomKey` generado automáticamente (formato legible)
+- [x] Dashboard staff con shell unificado y tema oscuro
+- [x] Escucha activa persiste al cambiar pestañas (Llamador/Admin/Estadísticas)
+- [x] `npm run test:unit` + `npm run build` OK

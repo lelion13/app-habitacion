@@ -7,7 +7,10 @@ import {
   type User,
 } from "./types";
 
+import type { ObjectId } from "mongodb";
+
 export interface TelegramRecipient {
+  userId: ObjectId;
   chatId: string;
   name: string;
 }
@@ -43,8 +46,9 @@ export async function findTelegramRecipientsForCall(
     .toArray();
 
   return users
-    .filter((u) => u.telegramChatId)
+    .filter((u) => u.telegramChatId && u._id)
     .map((u) => ({
+      userId: u._id!,
       chatId: u.telegramChatId!,
       name: u.name,
     }));
