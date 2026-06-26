@@ -13,6 +13,8 @@ import {
   parseTelegramCallbackData,
 } from "@/lib/telegram-call-actions";
 
+export const dynamic = "force-dynamic";
+
 interface TelegramUpdate {
   message?: {
     chat: { id: number };
@@ -33,8 +35,19 @@ function webhookAuthorized(request: NextRequest): boolean {
   return request.headers.get("x-telegram-bot-api-secret-token") === secret;
 }
 
+function resolveCallbackChatId(callback: NonNullable<TelegramUpdate["callback_query"]>): string {
+  if (callback.message?.chat?.id != null) {
+    return String(callback.message.chat.id);
+  }
+  if (callback.from?.id != null) {
+    return String(callback.from.id);
+  }
+  return "";
+}
+
 export async function POST(request: NextRequest) {
   if (!webhookAuthorized(request)) {
+    console.warn("[telegram] webhook rejected: invalid secret");
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -46,21 +59,54 @@ export async function POST(request: NextRequest) {
   }
 
   const callback = update.callback_query;
-  if (callback?.data && callback.id) {
-    const parsed = parseTelegramCallbackData(callback.data);
-    const chatId = String(callback.message?.chat.id ?? callback.from?.id ?? "");
+  if (callback?.id) {
+    const callbackId = callback.id;
+    const data = callback.data ?? "";
+    const chatId = resolveCallbackChatId(callback);
 
-    if (!parsed || !chatId) {
-      await answerCallbackQuery(callback.id, "Acción no válida.");
-      return NextResponse.json({ ok: true });
+    console.info("[telegram] callback_query received", {
+      action: data.startsWith("ca:") ? "accept" : data.startsWith("cc:") ? "complete" : "unknown",
+      hasChatId: Boolean(chatId),
+    });
+
+    try {
+      const parsed = data ? parseTelegramCallbackData(data) : null;
+
+      if (!parsed || !chatId) {
+        await answerCallbackQuery(callbackId, "Acción no válida.", { alert: true });
+        return NextResponse.json({ ok: true });
+      }
+
+      const result =
+        parsed.action === "accept"
+          ? await handleTelegramAccept(chatId, parsed.callId)
+          : await handleTelegramComplete(chatId, parsed.callId);
+
+      console.info("[telegram] callback_query handled", {
+        action: parsed.action,
+        ok: result.ok,
+      });
+
+      const answered = await answerCallbackQuery(callbackId, result.message, {
+        alert: !result.ok,
+      });
+      if (!answered) {
+        console.warn("[telegram] answerCallbackQuery failed", {
+          action: parsed.action,
+          ok: result.ok,
+        });
+      }
+    } catch (error) {
+      console.error("[telegram] callback_query error", {
+        message: error instanceof Error ? error.message : "unknown",
+      });
+      await answerCallbackQuery(
+        callbackId,
+        "Error al procesar la acción. Intente desde el dashboard.",
+        { alert: true },
+      );
     }
 
-    const result =
-      parsed.action === "accept"
-        ? await handleTelegramAccept(chatId, parsed.callId)
-        : await handleTelegramComplete(chatId, parsed.callId);
-
-    await answerCallbackQuery(callback.id, result.message);
     return NextResponse.json({ ok: true });
   }
 

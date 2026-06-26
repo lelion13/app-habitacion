@@ -84,8 +84,16 @@ Tras deploy, registrar webhook (una vez):
 ```bash
 curl -sS "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
   -H "Content-Type: application/json" \
-  -d "{\"url\":\"https://habitacion.lionapp.cloud/api/telegram/webhook\",\"secret_token\":\"$TELEGRAM_WEBHOOK_SECRET\"}"
+  -d "{\"url\":\"https://habitacion.lionapp.cloud/api/telegram/webhook\",\"secret_token\":\"$TELEGRAM_WEBHOOK_SECRET\",\"allowed_updates\":[\"message\",\"callback_query\"]}"
 ```
+
+Verificar (sin exponer el token en logs compartidos):
+
+```bash
+curl -sS "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
+```
+
+Debe mostrar `url` correcta, `allowed_updates` con `callback_query`, y `last_error_message` vacío.
 
 **Flujo:** Dashboard → Conectar Telegram → abrir `@habitacionesBot` en chat **privado** → `/start link_…` → **Activar escucha** (mismo piso/sector/rol que el llamado) → llamado desde habitación.
 

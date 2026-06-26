@@ -194,12 +194,14 @@ export async function editCallAlertMessage(
 export async function answerCallbackQuery(
   callbackQueryId: string,
   text: string,
-): Promise<void> {
-  await telegramApi("answerCallbackQuery", {
+  options?: { alert?: boolean },
+): Promise<boolean> {
+  const result = await telegramApi<{ ok: boolean }>("answerCallbackQuery", {
     callback_query_id: callbackQueryId,
-    text,
-    show_alert: text.length > 60,
+    text: text.slice(0, 200),
+    show_alert: options?.alert ?? text.length > 60,
   });
+  return Boolean(result?.ok);
 }
 
 export async function syncTelegramMessagesForCall(
@@ -323,8 +325,10 @@ export async function registerTelegramWebhook(): Promise<boolean> {
   if (!token || !appUrl) return false;
 
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  const body: Record<string, string> = {
+  const body: Record<string, unknown> = {
     url: `${appUrl.replace(/\/$/, "")}/api/telegram/webhook`,
+    allowed_updates: ["message", "callback_query"],
+    drop_pending_updates: false,
   };
   if (secret) body.secret_token = secret;
 
