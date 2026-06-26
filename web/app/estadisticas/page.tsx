@@ -3,13 +3,16 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { PageHeader } from "@/components/PageHeader";
+import { EstadisticasCharts } from "@/components/estadisticas/EstadisticasCharts";
 import { formatDurationMs } from "@/lib/format-duration";
+import { chartRangeExceeded } from "@/lib/call-analytics";
+import type { CallChartsData } from "@/lib/call-analytics";
+import { formatCallChannel } from "@/lib/calls";
 import {
   staffBtnPrimary,
   staffBtnSecondary,
   staffCard,
   staffContent,
-  staffEmpty,
   staffError,
   staffInput,
   staffKpiCard,
@@ -19,6 +22,7 @@ import {
 import {
   CALL_TYPE_LABELS,
   ROLE_LABELS,
+  type CallChannel,
   type CallStatus,
   type CallType,
   type StaffRole,
@@ -34,6 +38,9 @@ interface HistoryCall {
   status: CallStatus;
   createdAt: string;
   acceptedAt?: string;
+  acceptedByName?: string;
+  acceptedChannel?: CallChannel;
+  completedChannel?: CallChannel;
   completedAt?: string;
   responseTimeMs?: number;
   totalDurationMs?: number;
@@ -46,6 +53,8 @@ interface HistorySummary {
   avgSessionDurationMs: number | null;
   bellCount: number;
   videoCount: number;
+  telegramAcceptCount: number;
+  webAcceptCount: number;
 }
 
 function defaultFromDate(): string {
@@ -56,6 +65,12 @@ function defaultFromDate(): string {
 
 function todayDate(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function telegramAcceptPercent(summary: HistorySummary): string {
+  const known = summary.telegramAcceptCount + summary.webAcceptCount;
+  if (known === 0) return "—";
+  return `${Math.round((summary.telegramAcceptCount / known) * 100)}%`;
 }
 
 const STATUS_LABELS: Record<CallStatus, string> = {
@@ -79,22 +94,30 @@ export default function EstadisticasPage() {
 
   const [calls, setCalls] = useState<HistoryCall[]>([]);
   const [summary, setSummary] = useState<HistorySummary | null>(null);
+  const [charts, setCharts] = useState<CallChartsData | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chartsSkipped, setChartsSkipped] = useState(false);
 
   const loadHistory = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     setError(null);
 
+    const fromDate = new Date(`${from}T00:00:00`);
+    const toDate = new Date(`${to}T23:59:59`);
+    const canIncludeCharts = !chartRangeExceeded(fromDate, toDate);
+    setChartsSkipped(!canIncludeCharts);
+
     const params = new URLSearchParams({
-      from: new Date(`${from}T00:00:00`).toISOString(),
-      to: new Date(`${to}T23:59:59`).toISOString(),
+      from: fromDate.toISOString(),
+      to: toDate.toISOString(),
       page: String(page),
       limit: "20",
       includeSummary: "true",
     });
+    if (canIncludeCharts) params.set("includeCharts", "true");
     if (floor) params.set("floor", floor);
     if (sector) params.set("sector", sector);
     if (targetRole) params.set("targetRole", targetRole);
@@ -110,11 +133,13 @@ export default function EstadisticasPage() {
         error?: string;
         calls?: HistoryCall[];
         summary?: HistorySummary;
+        charts?: CallChartsData;
         pagination?: { totalPages: number };
       };
       if (!res.ok) throw new Error(data.error ?? "Error al cargar historial");
       setCalls(data.calls ?? []);
       setSummary(data.summary ?? null);
+      setCharts(canIncludeCharts ? (data.charts ?? null) : null);
       setTotalPages(data.pagination?.totalPages ?? 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
@@ -260,7 +285,7 @@ export default function EstadisticasPage() {
       )}
 
       {summary && (
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
           <KpiCard label="Total llamados" value={String(summary.totalCalls)} />
           <KpiCard label="Timbres" value={String(summary.bellCount)} />
           <KpiCard label="Videos" value={String(summary.videoCount)} />
@@ -272,8 +297,20 @@ export default function EstadisticasPage() {
             label="Sesión prom."
             value={formatDurationMs(summary.avgSessionDurationMs)}
           />
+          <KpiCard
+            label="% atención Telegram"
+            value={telegramAcceptPercent(summary)}
+          />
         </div>
       )}
+
+      {chartsSkipped && (
+        <p className={`mb-4 ${staffText}`}>
+          Los gráficos solo están disponibles para rangos de hasta 90 días.
+        </p>
+      )}
+
+      <EstadisticasCharts charts={charts} loading={loading} />
 
       <div className={`overflow-x-auto ${staffCard}`}>
         <table className="min-w-full text-left text-sm">
@@ -285,6 +322,9 @@ export default function EstadisticasPage() {
               <th className="px-4 py-3">Tipo</th>
               <th className="px-4 py-3">Rol</th>
               <th className="px-4 py-3">Estado</th>
+              <th className="px-4 py-3">Atendió</th>
+              <th className="px-4 py-3">Canal atención</th>
+              <th className="px-4 py-3">Canal cierre</th>
               <th className="px-4 py-3">Respuesta</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Sesión</th>
@@ -293,7 +333,7 @@ export default function EstadisticasPage() {
           <tbody>
             {calls.length === 0 ? (
               <tr>
-                <td colSpan={9} className={`px-4 py-10 text-center ${staffText}`}>
+                <td colSpan={12} className={`px-4 py-10 text-center ${staffText}`}>
                   Sin resultados para los filtros seleccionados.
                 </td>
               </tr>
@@ -310,6 +350,13 @@ export default function EstadisticasPage() {
                   <td className="px-4 py-3">{CALL_TYPE_LABELS[call.type]}</td>
                   <td className="px-4 py-3">{ROLE_LABELS[call.targetRole]}</td>
                   <td className="px-4 py-3">{STATUS_LABELS[call.status]}</td>
+                  <td className="px-4 py-3">{call.acceptedByName ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    {formatCallChannel(call.acceptedChannel)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {formatCallChannel(call.completedChannel)}
+                  </td>
                   <td className="px-4 py-3">
                     {formatDurationMs(call.responseTimeMs)}
                   </td>

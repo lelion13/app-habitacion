@@ -1,0 +1,12 @@
+change: call-analytics-enrichment
+status: proposed
+phase: design
+created: 2026-06-26
+domains:
+  - calls
+  - ui
+decisions:
+  charts_scope: extended
+  channel_rules: per_action
+  staff_tracking: accept_only
+  historical_data: new_only

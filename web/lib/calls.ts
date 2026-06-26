@@ -1,4 +1,4 @@
-import type { Call, CallStatus, StaffRole } from "./types";
+import type { Call, CallChannel, CallStatus, StaffRole } from "./types";
 
 export const ACTIVE_CALL_STATUSES: CallStatus[] = ["pending", "accepted"];
 
@@ -34,6 +34,8 @@ export function serializeCall(call: Call) {
     acceptedBy: call.acceptedBy?.toString(),
     acceptedAt: call.acceptedAt?.toISOString(),
     completedAt: call.completedAt?.toISOString(),
+    ...(call.acceptedChannel && { acceptedChannel: call.acceptedChannel }),
+    ...(call.completedChannel && { completedChannel: call.completedChannel }),
   };
   return {
     ...base,
@@ -61,4 +63,10 @@ export function resolveAlertKind(
 
 export function isTerminalStatus(status: CallStatus): boolean {
   return status === "completed" || status === "cancelled";
+}
+
+export function formatCallChannel(channel?: CallChannel): string {
+  if (channel === "web") return "Web";
+  if (channel === "telegram") return "Telegram";
+  return "—";
 }

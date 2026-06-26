@@ -1,5 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
-import { matchesListenTarget, isTerminalStatus, isActiveCallStatus, resolveAlertKind } from "../calls";
+import {
+  formatCallChannel,
+  matchesListenTarget,
+  isTerminalStatus,
+  isActiveCallStatus,
+  resolveAlertKind,
+} from "../calls";
 import { ObjectId } from "mongodb";
 
 describe("calls", () => {
@@ -39,5 +45,11 @@ describe("calls", () => {
       ]),
     ).toBe("video");
     expect(resolveAlertKind([])).toBeNull();
+  });
+
+  it("formats call channel labels", () => {
+    expect(formatCallChannel("web")).toBe("Web");
+    expect(formatCallChannel("telegram")).toBe("Telegram");
+    expect(formatCallChannel(undefined)).toBe("—");
   });
 });

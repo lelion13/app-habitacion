@@ -4,7 +4,7 @@ import { serializeCall } from "./calls";
 import { metricsOnAccept, metricsOnTerminal } from "./call-metrics";
 import { publishCallEvent, publishRoomEvent } from "./sse";
 import { clearSignalBuffer } from "./signal-buffer";
-import type { Call, CallStatus } from "./types";
+import type { Call, CallChannel, CallStatus } from "./types";
 
 export type AcceptCallResult =
   | { ok: true; call: Call }
@@ -29,6 +29,7 @@ function publishCallUpdated(call: Call): void {
 export async function acceptCall(
   callId: ObjectId,
   userId: ObjectId,
+  options?: { channel?: CallChannel },
 ): Promise<AcceptCallResult> {
   const db = await getDb();
   const existing = await db.collection<Call>("calls").findOne({ _id: callId });
@@ -48,16 +49,19 @@ export async function acceptCall(
   const acceptedAt = new Date();
   const acceptMetrics = metricsOnAccept(existing, acceptedAt);
 
+  const acceptSet: Partial<Call> = {
+    status: "accepted",
+    acceptedBy: userId,
+    acceptedAt,
+    ...acceptMetrics,
+  };
+  if (options?.channel) {
+    acceptSet.acceptedChannel = options.channel;
+  }
+
   const updated = await db.collection<Call>("calls").findOneAndUpdate(
     { _id: callId, status: "pending" },
-    {
-      $set: {
-        status: "accepted",
-        acceptedBy: userId,
-        acceptedAt,
-        ...acceptMetrics,
-      },
-    },
+    { $set: acceptSet },
     { returnDocument: "after" },
   );
 
@@ -77,7 +81,7 @@ export async function acceptCall(
 export async function completeCall(
   callId: ObjectId,
   userId: ObjectId,
-  options?: { requireAcceptedBy?: boolean },
+  options?: { requireAcceptedBy?: boolean; channel?: CallChannel },
 ): Promise<TerminalCallResult> {
   const db = await getDb();
   const call = await db.collection<Call>("calls").findOne({ _id: callId });
@@ -102,16 +106,23 @@ export async function completeCall(
   const completedAt = new Date();
   const terminalMetrics = metricsOnTerminal(call, completedAt);
 
+  const terminalSet: Partial<Call> = {
+    status,
+    completedAt,
+    ...terminalMetrics,
+  };
+  if (options?.channel) {
+    terminalSet.completedChannel = options.channel;
+  }
+
   await db.collection<Call>("calls").updateOne(
     { _id: callId },
-    { $set: { status, completedAt, ...terminalMetrics } },
+    { $set: terminalSet },
   );
 
   const updated: Call = {
     ...call,
-    status,
-    completedAt,
-    ...terminalMetrics,
+    ...terminalSet,
   };
 
   clearSignalBuffer(callId.toString());

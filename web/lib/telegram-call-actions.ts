@@ -73,7 +73,7 @@ export async function handleTelegramAccept(
     return { ok: false, message: "Escucha no activa para esta zona." };
   }
 
-  const result = await acceptCall(call._id!, user._id);
+  const result = await acceptCall(call._id!, user._id, { channel: "telegram" });
 
   if (result.ok) {
     void syncTelegramMessagesForCall(result.call).catch(() => {});
@@ -127,6 +127,7 @@ export async function handleTelegramComplete(
 
   const result = await completeCall(call._id!, user._id, {
     requireAcceptedBy: true,
+    channel: "telegram",
   });
 
   if (result.ok) {

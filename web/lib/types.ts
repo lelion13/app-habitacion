@@ -4,6 +4,7 @@ export type StaffRole = "nurse" | "quality" | "doctor";
 export type SystemRole = "user" | "supervisor" | "admin";
 export type CallType = "bell" | "video";
 export type CallStatus = "pending" | "accepted" | "completed" | "cancelled";
+export type CallChannel = "web" | "telegram";
 
 export interface Floor {
   _id?: ObjectId;
@@ -99,7 +100,9 @@ export interface Call {
   createdAt: Date;
   acceptedBy?: ObjectId;
   acceptedAt?: Date;
+  acceptedChannel?: CallChannel;
   completedAt?: Date;
+  completedChannel?: CallChannel;
   responseTimeMs?: number;
   totalDurationMs?: number;
   sessionDurationMs?: number;

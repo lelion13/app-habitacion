@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } else if (call.status === "pending") {
-    const accepted = await acceptCall(call._id!, user._id);
+    const accepted = await acceptCall(call._id!, user._id, { channel: "telegram" });
     if (!accepted.ok) {
       if (accepted.reason === "already_accepted") {
         const fresh = await db.collection<Call>("calls").findOne({ _id: call._id });

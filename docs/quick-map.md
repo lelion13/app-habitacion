@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram + PWA tablet + historial `/estadisticas` + UI oscura habitación + **dashboard staff (RBAC, ABM, shell oscuro, escucha persistente)**.
+**Estado actual (2026-06-26):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram con **acciones inline (Atender/Finalizar + join video)** + PWA tablet + historial `/estadisticas` + UI oscura habitación + **dashboard staff (RBAC, ABM, shell oscuro, escucha persistente)**.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -37,7 +37,9 @@ Guía rápida para orientarse en el repo y en SDD.
 | Signaling WebRTC | `web/app/api/calls/[id]/signal/` |
 | Lógica compartida | `web/lib/` |
 | Telegram (notify + link) | `web/lib/telegram.ts`, `web/lib/telegram-link.ts`, `web/lib/telegram-recipients.ts` |
-| API Telegram | `web/app/api/telegram/webhook/`, `web/app/api/staff/telegram/` |
+| Telegram (acciones llamado) | `web/lib/telegram-call-actions.ts`, `web/lib/telegram-video-join.ts`, `web/lib/calls-service.ts` |
+| Join video mobile | `web/app/join/video/` |
+| API Telegram | `web/app/api/telegram/webhook/`, `web/app/api/staff/telegram/`, `web/app/api/staff/telegram/video-join/` |
 | VideoCallSession | `web/components/VideoCallSession.tsx` |
 | Estado global | `web/context/AppContext.tsx` |
 
@@ -65,10 +67,13 @@ Guía rápida para orientarse en el repo y en SDD.
 | [pwa-tablet-room-bind](../openspec/changes/archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, manifest dinámico, fullscreen |
 | [call-alerts-and-history](../openspec/changes/archive/2026-06-22-call-alerts-and-history/) | 2026-06-22 | Alerta persistente bell/video + historial `/estadisticas` |
 | [admin-rbac-abm](../openspec/changes/archive/2026-06-19-admin-rbac-abm/) | 2026-06-19 | RBAC + ABM + shell staff oscuro + escucha persistente |
+| [telegram-call-actions](../openspec/changes/archive/2026-06-26-telegram-call-actions/) | 2026-06-26 | Botones Telegram Atender/Finalizar + join video mobile |
 
 ## Changes activos
 
-_Ninguno._
+| Change | Resumen |
+|--------|---------|
+| [call-analytics-enrichment](../openspec/changes/call-analytics-enrichment/) | Canal Telegram/web + gráficos extendidos en `/estadisticas` |
 
 ## Docs operativos
 

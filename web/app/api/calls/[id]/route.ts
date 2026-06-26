@@ -40,7 +40,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const userId = new ObjectId(payload.sub);
 
   if (action === "accept") {
-    const result = await acceptCall(callId, userId);
+    const result = await acceptCall(callId, userId, { channel: "web" });
     if (!result.ok) {
       const status = result.reason === "not_found" ? 404 : 400;
       return NextResponse.json({ error: "Acción no permitida" }, { status });
@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   if (action === "complete") {
-    const result = await completeCall(callId, userId);
+    const result = await completeCall(callId, userId, { channel: "web" });
     if (!result.ok) {
       const status = result.reason === "not_found" ? 404 : 400;
       return NextResponse.json({ error: "Acción no permitida" }, { status });

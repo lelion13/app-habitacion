@@ -349,6 +349,21 @@ When room is inactive, `/habitacion` MUST display a prominent inactive message; 
 - **WHEN** navigating to Administración or Estadísticas without deactivating
 - **THEN** header MUST still show **En línea** (SSE via `StaffListenProvider` in root layout)
 
+### REQ-UI-026: Página join video mobile (Telegram)
+
+Route `/join/video` MUST be mobile-first and usable without prior dashboard navigation (magic link from Telegram).
+
+#### Scenario: Layout móvil
+- **GIVEN** valid token exchanged to JWT via `POST /api/staff/telegram/video-join`
+- **WHEN** page loads on phone viewport
+- **THEN** video UI SHALL be fullscreen-friendly with clear end-call control
+- **AND** MUST request camera/microphone permission via existing `VideoCallSession`
+
+#### Scenario: Error de token
+- **GIVEN** invalid or expired token
+- **WHEN** page loads
+- **THEN** user SHALL see concise Spanish error and guidance to use dashboard
+
 ## Audio (bell)
 
 - Implementation: Web Audio API via `lib/bell.ts` (`playBell`, `playVideoAlert`, `startAlertLoop`, `stopAlertLoop`, `syncAlertLoop`)
@@ -362,7 +377,6 @@ When room is inactive, `/habitacion` MUST display a prominent inactive message; 
 | TURN server (NAT estricto) | High | calls + deploy |
 | Service worker offline / cache | Medium | ui |
 | Notificaciones push (FCM) | Low | realtime |
-| Notificaciones Telegram inline buttons | Low | calls + ui |
 | Auto-desactivar escucha en logout | Low | auth |
 
 ## Tests

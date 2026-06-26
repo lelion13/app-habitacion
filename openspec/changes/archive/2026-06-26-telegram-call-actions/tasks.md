@@ -27,18 +27,18 @@
 
 ## Fase 4 — Verificación
 
-- [ ] 4.1 Manual: timbre Atender → Finalizar desde Telegram
-- [ ] 4.2 Manual: dos staff — segundo ve “ya atendido”
-- [ ] 4.3 Manual: video link en móvil → WebRTC
-- [ ] 4.4 Manual: accept dashboard sincroniza mensajes Telegram
+- [x] 4.1 Manual: timbre Atender → Finalizar desde Telegram
+- [x] 4.2 Manual: dos staff — segundo ve “ya atendido”
+- [x] 4.3 Manual: video link en móvil → WebRTC
+- [x] 4.4 Manual: accept dashboard sincroniza mensajes Telegram
 - [x] 4.5 `npm run test:unit` + `npm run build`
 - [x] 4.6 `verify-report.md`
 
 ## Fase 5 — Cierre SDD
 
-- [ ] 5.1 Fusionar deltas → `openspec/specs/`
-- [ ] 5.2 Actualizar `docs/runbook.md` (botones, tokens video)
-- [ ] 5.3 Archivar change
+- [x] 5.1 Fusionar deltas → `openspec/specs/`
+- [x] 5.2 Actualizar `docs/runbook.md` (botones, tokens video)
+- [x] 5.3 Archivar change
 
 ## Dependencias
 

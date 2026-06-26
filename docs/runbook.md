@@ -1,6 +1,6 @@
 # Runbook — App Habitación
 
-Estado: **local + prod** documentado (2026-06-19).
+Estado: **local + prod** documentado (2026-06-26).
 
 ## Requisitos
 
@@ -87,7 +87,7 @@ Si ya hay datos en Mongo, basta con que un usuario haga login (migración idempo
 
 ```bash
 cd web
-npm run test:unit    # 37 tests
+npm run test:unit    # 43 tests
 npm run build
 npm run test:e2e     # requiere MongoDB + dev server
 ```
@@ -147,6 +147,37 @@ Tras deploy de cambios PWA: eliminar ícono anterior y reinstalar desde URL con 
 3. Video pending usa tono distinto (`playVideoAlert`).
 4. La alerta **para** al aceptar, completar o cancelar (si no quedan otros `pending`).
 
+## Telegram — acciones en llamados
+
+Requiere: cuenta vinculada (menú usuario → **Conectar Telegram**) + **escucha activa** (mismo piso/sector/rol que el llamado).
+
+| Tipo | Acción en Telegram |
+|------|-------------------|
+| Timbre | **Atender** → **Finalizar** (editar mismo mensaje) |
+| Video | **Unirse a video** → `/join/video?token=…` → WebRTC en el celular |
+
+**Prod:** tras deploy, registrar webhook con `callback_query` (ver [deploy-hostinger.md](./deploy-hostinger.md)).
+
+### Flujo manual (timbre)
+
+1. Dashboard: **Activar escucha** + Telegram vinculado
+2. Habitación: timbre → llega push Telegram con **Atender**
+3. Tocar **Atender** → mensaje pasa a “En curso” con **Finalizar**
+4. Tocar **Finalizar** → llamado `completed`; dashboard y habitación se actualizan vía SSE
+
+### Flujo manual (video)
+
+1. Mismos requisitos de escucha + Telegram
+2. Habitación: **Video** → push con **Unirse a video**
+3. Abrir en el celular → página fullscreen → cámara/micrófono → videollamada
+4. Finalizar desde la UI de video o desde dashboard
+
+**Logs útiles** (contenedor `app-habitacion-web`):
+
+- `[telegram] sending call alert` — alerta enviada
+- `[telegram] callback_query received` / `handled` — botón procesado
+- `[telegram] webhook rejected` — secret incorrecto
+
 ## Estadísticas (`/estadisticas`)
 
 Requiere `systemRole` **supervisor** o **admin**. Filtros por fechas, piso, sector, rol, habitación, tipo y estado. KPIs + tabla paginada con métricas (`responseTimeMs`, `totalDurationMs`, `sessionDurationMs`).
@@ -179,6 +210,8 @@ db.calls.createIndex({ status: 1 })
 | Permisos cámara denegados | Browser/tablet | HTTPS obligatorio; revisar permisos sitio |
 | Contenedores VPS `created` | `env_file: .env.prod` con MCP | Usar variables inline (ver deploy-hostinger.md) |
 | Docker error pipe | Docker Desktop apagado | Iniciar Docker Desktop |
+| Botón Telegram no hace nada | Webhook sin `callback_query` o imagen vieja | Re-registrar webhook con `allowed_updates`; redeploy GHCR `latest` |
+| Telegram “Escucha no activa” | Desactivó escucha antes del click | **Activar escucha** en dashboard y reintentar |
 
 ## Cancelar llamado colgado (API)
 

@@ -80,6 +80,10 @@ Authenticated staff MUST link a Telegram account to receive call notifications.
 - Link tokens MUST NOT be guessable; single use; short TTL
 - Webhook MUST validate Telegram update structure; SHOULD use `TELEGRAM_WEBHOOK_SECRET` if configured
 - `telegramChatId` MUST NOT appear in client error messages or public API responses to other users
+- `callback_query` data MUST be validated (known prefix, valid ObjectId)
+- Magic link tokens for video join MUST NOT be logged
+- JWT from video-join MUST NOT grant admin or unrelated call access
+- Webhook registration MUST include `allowed_updates: ["message", "callback_query"]`
 
 ### REQ-AUTH-008: Roles de sistema
 
@@ -152,6 +156,42 @@ Telegram notifications for calls MUST use active `staff_sessions` matching call 
 - **WHEN** user logs out without pressing Desactivar escucha
 - **THEN** `staff_sessions` MAY remain active
 - **AND** Telegram notifications MAY still be sent for matching calls
+
+### REQ-AUTH-012: Autorización acciones Telegram
+
+Telegram `callback_query` actions MUST map `chat.id` to exactly one `users` document with `telegramChatId`.
+
+Authorization MUST re-check at action time:
+1. `staff_sessions` with `active: true` matching call `floor`, `sector`, `targetRole`
+2. `telegramNotifyEnabled !== false`
+
+Failures MUST return generic callback text (no user enumeration).
+
+#### Scenario: Chat no vinculado
+- **GIVEN** callback from unknown `chatId`
+- **WHEN** any call action is attempted
+- **THEN** action MUST be rejected
+
+### REQ-AUTH-013: Token join videollamada
+
+`POST /api/staff/telegram/video-join` MUST accept `{ token }` and return short-lived JWT scoped to staff video actions for one `callId`.
+
+| Property | Rule |
+|----------|------|
+| TTL token | 30 minutes from creation |
+| One-time | Token MUST be invalidated after successful exchange |
+| Binding | Token MUST bind `userId` + `callId` |
+| JWT TTL | ≤ 2 hours or until call terminal |
+
+#### Scenario: Canje exitoso
+- **GIVEN** valid unused token
+- **WHEN** POST video-join
+- **THEN** response SHALL include JWT usable for signaling and complete for that call
+
+#### Scenario: Token de otro usuario
+- **GIVEN** token issued for user A
+- **WHEN** exchange attempted after chatId mismatch
+- **THEN** MUST return 401
 
 ## Roles de escucha
 
