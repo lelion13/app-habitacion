@@ -103,6 +103,38 @@ Debe mostrar `url` correcta, `allowed_updates` con `callback_query`, y `last_err
 
 **Seguridad:** nunca commitear el token; rotar en BotFather si se expone.
 
+## SMTP (invitaciones Familiar)
+
+Variables en el stack (mismo `.env` / environment del panel Hostinger). **Sin espacios** alrededor del `=`:
+
+| Variable | Ejemplo |
+|----------|---------|
+| `SMTP_HOST` | `mail.cpmgsa.com.ar` |
+| `SMTP_PORT` | `587` (o `465`) |
+| `SMTP_USER` | `usuario@dominio` |
+| `SMTP_PASS` | contraseña del buzón |
+| `SMTP_FROM` | mismo email o `Nombre <usuario@dominio>` |
+| `SMTP_SECURE` | `false` con 587; `true` con 465 |
+
+El compose de prod **debe** mapear esas vars al servicio `web` (ver `docker-compose.prod.yml` en el repo). Si el compose del VPS es viejo, la app responde **503** aunque el `.env` tenga SMTP.
+
+### Sincronizar compose en el VPS (evitar drift)
+
+El panel Hostinger suele guardar el stack como `/docker/app-habitacion/docker-compose.yml`. Tras push a GitHub:
+
+```bash
+cd /docker/app-habitacion
+# Copiar la versión del repo (con SMTP_*) sobre el compose del stack
+cp /ruta/al/repo/docker-compose.prod.yml ./docker-compose.yml
+# o: curl/wget del raw de GitHub
+
+# Asegurar SMTP_* en el .env del stack (sin espacios tras =)
+docker compose pull
+docker compose up -d --force-recreate web
+```
+
+Con Hostinger MCP: actualizar el contenido del proyecto al `docker-compose.prod.yml` del repo (incl. bloque `SMTP_*`) y luego `VPS_updateProject`.
+
 ## Seed inicial (una vez)
 
 Con `BOOTSTRAP_ENABLED=true` en el stack:
@@ -138,3 +170,4 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml exec mongodb \
 | SSE no llega | Confirmar flush label; una sola réplica web |
 | Video "Conectando…" sin remoto | Hard refresh; verificar imagen ≥ `32d5a69`; posible NAT sin TURN |
 | 502 web | `docker logs app-habitacion-web`; revisar Mongo healthy |
+| Familiar 503 correo | Compose sin `SMTP_*` en `web.environment`, o env vacío/con espacios; sincronizar `docker-compose.prod.yml` y recrear `web` |
