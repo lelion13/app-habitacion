@@ -6,6 +6,7 @@ import { resolveRoomKey } from "@/lib/room-key";
 import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
 import { clearSignalBuffer } from "@/lib/signal-buffer";
 import { syncTelegramMessagesForCall } from "@/lib/telegram-call-actions";
+import { isStaffRole } from "@/lib/validation";
 import type { Call, Room } from "@/lib/types";
 
 async function resolveRoom(roomKey: string): Promise<Room | null> {
@@ -101,13 +102,15 @@ export async function PATCH(request: NextRequest) {
     const serialized = serializeCall(updated);
     clearSignalBuffer(call._id!.toString());
 
-    publishCallEvent(
-      call.floor,
-      call.sector,
-      call.targetRole,
-      "call:updated",
-      serialized,
-    );
+    if (isStaffRole(call.targetRole)) {
+      publishCallEvent(
+        call.floor,
+        call.sector,
+        call.targetRole,
+        "call:updated",
+        serialized,
+      );
+    }
     publishRoomEvent(room._id!.toString(), "call:updated", serialized);
 
     void syncTelegramMessagesForCall(updated).catch(() => {});

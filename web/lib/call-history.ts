@@ -1,12 +1,12 @@
-import type { CallStatus, CallType, StaffRole } from "./types";
-import { isCallType, isStaffRole } from "./validation";
+import type { CallStatus, CallType, CallTargetRole } from "./types";
+import { isCallType, isCallTargetRole } from "./validation";
 
 export interface HistoryFilters {
   from: Date;
   to: Date;
   floor?: string;
   sector?: string;
-  targetRole?: StaffRole;
+  targetRole?: CallTargetRole;
   roomNumber?: string;
   type?: CallType;
   status?: CallStatus;
@@ -51,7 +51,7 @@ export function parseHistoryParams(
   if (typeParam && !isCallType(typeParam)) {
     return { error: "Tipo inválido" };
   }
-  if (roleParam && !isStaffRole(roleParam)) {
+  if (roleParam && !isCallTargetRole(roleParam)) {
     return { error: "Rol inválido" };
   }
   if (statusParam && !ALL_STATUSES.includes(statusParam as CallStatus)) {
@@ -63,7 +63,7 @@ export function parseHistoryParams(
     to,
     floor: searchParams.get("floor")?.trim() || undefined,
     sector: searchParams.get("sector")?.trim() || undefined,
-    targetRole: roleParam ? (roleParam as StaffRole) : undefined,
+    targetRole: roleParam ? (roleParam as CallTargetRole) : undefined,
     roomNumber: searchParams.get("roomNumber")?.trim() || undefined,
     type: typeParam ? (typeParam as CallType) : undefined,
     status: statusParam ? (statusParam as CallStatus) : undefined,

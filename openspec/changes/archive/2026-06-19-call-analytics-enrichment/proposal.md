@@ -1,7 +1,7 @@
 # Proposal — Enriquecimiento estadísticas de llamados
 
 **Change:** `call-analytics-enrichment`  
-**Status:** Propuesta + specs + design — pendiente implementación  
+**Status:** Implementado, verificado y archivado  
 **Dominios:** `calls`, `ui`
 
 ## Intent
@@ -92,8 +92,8 @@ Campos opcionales en Mongo — sin migración destructiva. Revertir UI gráficos
 
 ## Success criteria
 
-- [ ] Llamado atendido desde Telegram persiste `acceptedChannel: telegram`
-- [ ] Llamado atendido desde dashboard persiste `acceptedChannel: web`
-- [ ] `/estadisticas` muestra gráficos extendidos con filtros
-- [ ] Históricos sin canal no rompen agregaciones
-- [ ] `npm run test:unit` + `npm run build` OK
+- [x] Llamado atendido desde Telegram persiste `acceptedChannel: telegram`
+- [x] Llamado atendido desde dashboard persiste `acceptedChannel: web`
+- [x] `/estadisticas` muestra gráficos extendidos con filtros
+- [x] Históricos sin canal no rompen agregaciones
+- [x] `npm run test:unit` + `npm run build` OK

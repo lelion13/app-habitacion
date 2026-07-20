@@ -1,4 +1,4 @@
-import type { CallChannel, StaffRole } from "./types";
+import type { CallChannel, CallTargetRole } from "./types";
 import { roundAvg } from "./call-history";
 
 export const MAX_CHART_DAYS = 90;
@@ -23,7 +23,7 @@ export interface CallChartsData {
   };
   byFloor: { floor: string; count: number }[];
   bySector: { sector: string; count: number }[];
-  byRole: { role: StaffRole; count: number }[];
+  byRole: { role: CallTargetRole; count: number }[];
 }
 
 export function chartRangeExceeded(from: Date, to: Date): boolean {

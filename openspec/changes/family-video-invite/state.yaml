@@ -1,0 +1,28 @@
+change: family-video-invite
+status: specified
+phase: tasks
+created: 2026-06-19
+domains:
+  - calls
+  - ui
+  - realtime
+decisions:
+  hide_doctor: global_flag
+  family_ui: video_only_full_width
+  family_theme: fuchsia_e879f9
+  modal: email_required_message_optional
+  video_start: on_family_open_link
+  auth: magic_link_no_login
+  concurrency: one_family_mutex_with_staff_calls
+  hangup: both_sides
+  token_ttl_hours: 3
+  token_one_time: true
+  stats_role: family
+  rate_limit: 1_per_room_per_hour
+  email: smtp_env
+  dashboard: out_of_scope
+  telegram: out_of_scope
+  email_storage: full_in_db_no_plaintext_logs
+  api_invite: POST_/api/calls/family-invite
+  api_join: POST_/api/calls/family-join
+  guest_peer: VideoCallSession_role_staff

@@ -1,11 +1,20 @@
-import type { CallType, ListenConfig, StaffRole, SystemRole } from "./types";
+import type { CallTargetRole, CallType, ListenConfig, StaffRole, SystemRole } from "./types";
 import { isSystemRole } from "./system-roles";
 
 const STAFF_ROLES: StaffRole[] = ["nurse", "quality", "doctor"];
+const CALL_TARGET_ROLES: CallTargetRole[] = [...STAFF_ROLES, "family"];
 const CALL_TYPES: CallType[] = ["bell", "video"];
+
+/** Email estricto: local@dominio.tld */
+const STRICT_EMAIL =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 export function isStaffRole(value: string): value is StaffRole {
   return STAFF_ROLES.includes(value as StaffRole);
+}
+
+export function isCallTargetRole(value: string): value is CallTargetRole {
+  return CALL_TARGET_ROLES.includes(value as CallTargetRole);
 }
 
 export function isCallType(value: string): value is CallType {
@@ -26,7 +35,7 @@ export function validateListenConfig(
 }
 
 export function validateEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return STRICT_EMAIL.test(email.trim());
 }
 
 export function validatePassword(password: string): boolean {

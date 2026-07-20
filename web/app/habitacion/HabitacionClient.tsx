@@ -3,21 +3,24 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Bell, Video } from "lucide-react";
-import type { StaffRole, CallType } from "@/lib/types";
-import { ROLE_LABELS, CALL_TYPE_LABELS } from "@/lib/types";
+import type { CallTargetRole, CallType, StaffRole } from "@/lib/types";
+import { CALL_TARGET_LABELS, CALL_TYPE_LABELS, ROLE_LABELS } from "@/lib/types";
 import { VideoCallSession } from "@/components/VideoCallSession";
 import { InstallRoomBanner } from "@/components/InstallRoomBanner";
 import { RoomUnconfiguredScreen } from "@/components/RoomUnconfiguredScreen";
 import { HabitacionHeader } from "@/components/habitacion/HabitacionHeader";
 import { HabitacionCallButton } from "@/components/habitacion/HabitacionCallButton";
 import { HabitacionCallModal } from "@/components/habitacion/HabitacionCallModal";
+import { HabitacionFamilyInviteModal } from "@/components/habitacion/HabitacionFamilyInviteModal";
 import { HabitacionToast } from "@/components/habitacion/HabitacionToast";
 import {
+  FAMILY_THEME,
   HABITACION_BG,
   HABITACION_BORDER,
   HABITACION_FG,
   HABITACION_MUTED,
   ROLE_THEME,
+  visibleHabitacionRoles,
 } from "@/lib/habitacion-theme";
 import {
   clearStoredRoomKey,
@@ -41,11 +44,9 @@ interface RoomInfo {
 interface ActiveCall {
   id: string;
   type: CallType;
-  targetRole: StaffRole;
+  targetRole: CallTargetRole;
   status: string;
 }
-
-const ROLES: StaffRole[] = ["nurse", "quality", "doctor"];
 
 function HabitacionLoading() {
   return (
@@ -72,8 +73,12 @@ export function HabitacionClient() {
   const [cancelling, setCancelling] = useState(false);
   const [lastCall, setLastCall] = useState<string | null>(null);
   const [callElapsed, setCallElapsed] = useState(0);
+  const [familyModalOpen, setFamilyModalOpen] = useState(false);
+  const [familySubmitting, setFamilySubmitting] = useState(false);
+  const [familyError, setFamilyError] = useState<string | null>(null);
 
   const roomQuery = roomKey ? `?key=${encodeURIComponent(roomKey)}` : "";
+  const staffRoles = visibleHabitacionRoles();
 
   useEffect(() => {
     registerServiceWorker();
@@ -196,6 +201,29 @@ export function HabitacionClient() {
     }
   }
 
+  async function inviteFamily(email: string, message: string) {
+    if (activeCall || !roomKey || (room && !room.active)) return;
+    setFamilySubmitting(true);
+    setFamilyError(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/calls/family-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomKey, email, message }),
+      });
+      const data = (await res.json()) as { error?: string; call?: ActiveCall };
+      if (!res.ok) throw new Error(data.error ?? "Error al enviar invitación");
+      setActiveCall(data.call ?? null);
+      setFamilyModalOpen(false);
+      setLastCall(`Invitación enviada a Familiar`);
+    } catch (e) {
+      setFamilyError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setFamilySubmitting(false);
+    }
+  }
+
   async function cancelActiveCall() {
     if (!roomKey) return;
     setCancelling(true);
@@ -226,7 +254,7 @@ export function HabitacionClient() {
     activeCall?.type === "video" && activeCall.status === "accepted";
 
   function buttonVisualState(
-    role: StaffRole,
+    role: CallTargetRole,
     type: CallType,
   ): "idle" | "calling" | "connected" {
     if (!activeCall || activeCall.targetRole !== role || activeCall.type !== type) {
@@ -284,7 +312,7 @@ export function HabitacionClient() {
 
         <div className="habitacion-body">
           <div className="habitacion-sectors">
-            {ROLES.map((role) => {
+            {staffRoles.map((role) => {
               const theme = ROLE_THEME[role];
               const isActiveSector = activeCall?.targetRole === role;
               const sectionBg = isActiveSector ? theme.activeBgStyle : theme.bgStyle;
@@ -312,7 +340,7 @@ export function HabitacionClient() {
                     </span>
                   </div>
 
-                  <div className="habitacion-call-row flex min-h-0 flex-1 items-center justify-center pb-3">
+                  <div className="habitacion-call-row flex min-h-0 flex-1 items-center justify-center gap-2 pb-3">
                     <HabitacionCallButton
                       label="Timbre"
                       icon={<Bell size={28} strokeWidth={2.5} />}
@@ -349,6 +377,55 @@ export function HabitacionClient() {
                 </section>
               );
             })}
+
+            <section
+              className="relative flex min-h-0 flex-col rounded-2xl border px-2 py-1 transition-colors duration-300"
+              style={{
+                background:
+                  activeCall?.targetRole === "family"
+                    ? FAMILY_THEME.activeBgStyle
+                    : FAMILY_THEME.bgStyle,
+                borderColor: FAMILY_THEME.borderStyle,
+              }}
+            >
+              <div className="flex shrink-0 items-center justify-center gap-2 py-2">
+                <span
+                  className={`text-4xl leading-none ${FAMILY_THEME.textClass}`}
+                  aria-hidden
+                >
+                  {FAMILY_THEME.icon}
+                </span>
+                <span
+                  className={`text-center text-2xl font-black leading-tight ${FAMILY_THEME.textClass}`}
+                >
+                  {CALL_TARGET_LABELS.family}
+                </span>
+              </div>
+
+              <div className="habitacion-call-row flex min-h-0 flex-1 items-center justify-center pb-3">
+                <HabitacionCallButton
+                  label="Video"
+                  icon={<Video size={28} strokeWidth={2.5} />}
+                  ringColor={FAMILY_THEME.ringColor}
+                  visualState={buttonVisualState("family", "video")}
+                  fullWidth
+                  disabled={
+                    roomInactive ||
+                    calling ||
+                    familySubmitting ||
+                    (hasActiveCall &&
+                      !(
+                        activeCall?.targetRole === "family" &&
+                        activeCall?.type === "video"
+                      ))
+                  }
+                  onClick={() => {
+                    setFamilyError(null);
+                    setFamilyModalOpen(true);
+                  }}
+                />
+              </div>
+            </section>
           </div>
 
           <p
@@ -370,6 +447,17 @@ export function HabitacionClient() {
             onCancel={() => void cancelActiveCall()}
           />
         )}
+
+        <HabitacionFamilyInviteModal
+          open={familyModalOpen && !hasActiveCall}
+          submitting={familySubmitting}
+          error={familyError}
+          onClose={() => {
+            setFamilyModalOpen(false);
+            setFamilyError(null);
+          }}
+          onSubmit={(email, message) => void inviteFamily(email, message)}
+        />
 
         <HabitacionToast
           message={error}

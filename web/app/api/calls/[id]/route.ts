@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getBearerToken, isVideoJoinPayload, verifyToken } from "@/lib/auth";
+import {
+  getBearerToken,
+  isFamilyJoinPayload,
+  isVideoJoinPayload,
+  verifyToken,
+} from "@/lib/auth";
 import { serializeCall } from "@/lib/calls";
 import {
   acceptCall,
@@ -29,8 +34,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
+  if (isFamilyJoinPayload(payload) && payload.callId !== id) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
   const body = (await request.json()) as { action?: string };
   const action = body.action;
+
+  if (isFamilyJoinPayload(payload)) {
+    if (action !== "complete") {
+      return NextResponse.json({ error: "Acción no permitida" }, { status: 400 });
+    }
+    const callId = new ObjectId(id);
+    const result = await completeCall(callId, callId, { channel: "web" });
+    if (!result.ok) {
+      const status = result.reason === "not_found" ? 404 : 400;
+      return NextResponse.json({ error: "Acción no permitida" }, { status });
+    }
+    return NextResponse.json({ call: serializeCall(result.call) });
+  }
 
   if (isVideoJoinPayload(payload) && action === "cancel") {
     return NextResponse.json({ error: "Acción no permitida" }, { status: 400 });

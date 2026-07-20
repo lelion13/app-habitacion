@@ -41,6 +41,8 @@ http://localhost:3000/habitacion?key=room-101-key
 | `NEXT_PUBLIC_ROOM_KEY` | Fallback dev si no hay `?key=` |
 | `NEXT_PUBLIC_APP_URL` | URL pública (prod: `https://habitacion.lionapp.cloud`) |
 | `BOOTSTRAP_ENABLED` | `true` solo para seed inicial prod (luego `false`) |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Envío invitaciones Familiar |
+| `SMTP_SECURE` | `true` para puerto 465 (TLS implícito) |
 
 ## Credenciales demo
 
@@ -180,7 +182,37 @@ Requiere: cuenta vinculada (menú usuario → **Conectar Telegram**) + **escucha
 
 ## Estadísticas (`/estadisticas`)
 
-Requiere `systemRole` **supervisor** o **admin**. Filtros por fechas, piso, sector, rol, habitación, tipo y estado. KPIs + tabla paginada con métricas (`responseTimeMs`, `totalDurationMs`, `sessionDurationMs`).
+Requiere `systemRole` **supervisor** o **admin**. Filtros por fechas, piso, sector, rol (incluye **Familiar**), habitación, tipo y estado.
+
+**KPIs:** totales, timbres/videos, tiempos promedio, % atención Telegram (solo sobre llamados con canal conocido).
+
+**Tabla paginada:** métricas (`responseTimeMs`, `totalDurationMs`, `sessionDurationMs`), **Atendió** (nombre staff), **Canal atención** / **Canal cierre** (`Web`, `Telegram`, o `—` si histórico sin dato).
+
+**Gráficos** (Recharts, tema oscuro staff): volumen por día (timbre/video), tiempo de respuesta, split canal, desglose piso/sector/rol. Se cargan con `includeCharts=true` en `GET /api/calls/history` y respetan los mismos filtros que la tabla.
+
+**Límite gráficos:** rango de fechas máximo **90 días**; si se supera, la API devuelve 400 con `includeCharts=true` y la UI omite gráficos mostrando aviso (tabla y KPIs siguen funcionando).
+
+**Canal por acción** (solo llamados nuevos post-deploy):
+
+| Origen | `acceptedChannel` | `completedChannel` |
+|--------|-------------------|-------------------|
+| PATCH dashboard / video staff | `web` | `web` |
+| Telegram Atender / join video | `telegram` | — |
+| Telegram Finalizar timbre | — | `telegram` |
+
+Código: `web/lib/call-analytics.ts`, `web/lib/call-analytics-db.ts`, `web/components/estadisticas/EstadisticasCharts.tsx`.
+
+## Videollamada Familiar
+
+En la tablet (`/habitacion`): sección **Familiar** (Médico oculto por flag). Al tocar Video se pide email (+ mensaje opcional); el sistema envía un magic link por SMTP (`/join/familiar?token=…`, TTL 3 h, un solo uso).
+
+- Rate limit: **1 invitación / habitación / hora**
+- No convive con otro llamado activo (staff o familiar)
+- No aparece en el Llamador ni Telegram
+- Variables: `SMTP_*` (ver tabla de entorno)
+
+Si SMTP no está configurado, la API responde 503 con mensaje genérico en español.
+
 
 ## Índices Mongo (historial)
 
@@ -204,6 +236,8 @@ db.calls.createIndex({ status: 1 })
 | Dashboard sin sonido | Autoplay del navegador | **Probar timbre** / **Activar escucha** |
 | Alerta no repite | Audio no desbloqueado | Activar escucha; revisar indicador en dashboard |
 | `/estadisticas` vacío | Sin llamados en rango de fechas | Ampliar filtro de fechas (default 7 días) |
+| Gráficos no aparecen | Rango > 90 días | Acortar filtro de fechas a ≤ 90 días |
+| Canal muestra `—` | Llamado anterior al deploy de analytics | Esperado; solo nuevos llamados tienen canal |
 | SSE sin eventos (dev) | Hot reload reinicia bus | Recargar dashboard |
 | Solo cámara local, "Conectando…" | Bug SSE signaling (pre `32d5a69`) | Hard refresh; verificar imagen GHCR actual |
 | Video no conecta tras 15s | NAT/firewall hospital | Backlog TURN; probar misma red WiFi |

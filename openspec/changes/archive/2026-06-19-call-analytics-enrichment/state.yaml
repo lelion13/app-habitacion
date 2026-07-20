@@ -1,7 +1,8 @@
 change: call-analytics-enrichment
-status: proposed
-phase: design
+status: archived
+phase: archive
 created: 2026-06-26
+archived: 2026-06-19
 domains:
   - calls
   - ui

@@ -2,7 +2,7 @@
 
 Guía rápida para orientarse en el repo y en SDD.
 
-**Estado actual (2026-06-26):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram con **acciones inline (Atender/Finalizar + join video)** + PWA tablet + historial `/estadisticas` + UI oscura habitación + **dashboard staff (RBAC, ABM, shell oscuro, escucha persistente)**.
+**Estado actual (2026-06-19):** prod en https://habitacion.lionapp.cloud — timbre + videollamada WebRTC + layout 16:9 + alertas Telegram con **acciones inline (Atender/Finalizar + join video)** + PWA tablet + historial `/estadisticas` con **canal Telegram/web + gráficos analíticos** + UI oscura habitación + **dashboard staff (RBAC, ABM, shell oscuro, escucha persistente)**.
 
 ## Documentación SDD (fuente de verdad)
 
@@ -30,6 +30,7 @@ Guía rápida para orientarse en el repo y en SDD.
 | roomKey legible | `web/lib/room-key-gen.ts` |
 | Catálogo staff | `web/app/api/staff/catalog/` |
 | Estadísticas / historial | `web/app/estadisticas/`, `web/app/api/calls/history/` |
+| Analytics llamados | `web/lib/call-analytics.ts`, `web/lib/call-analytics-db.ts`, `web/components/estadisticas/EstadisticasCharts.tsx` |
 | Métricas llamados | `web/lib/call-metrics.ts`, `web/lib/call-history.ts` |
 | Alerta persistente | `web/lib/bell.ts` (`startAlertLoop`, `playVideoAlert`) |
 | Videollamada staff | `web/app/dashboard/video/[callId]/` |
@@ -39,6 +40,7 @@ Guía rápida para orientarse en el repo y en SDD.
 | Telegram (notify + link) | `web/lib/telegram.ts`, `web/lib/telegram-link.ts`, `web/lib/telegram-recipients.ts` |
 | Telegram (acciones llamado) | `web/lib/telegram-call-actions.ts`, `web/lib/telegram-video-join.ts`, `web/lib/calls-service.ts` |
 | Join video mobile | `web/app/join/video/` |
+| Join Familiar | `web/app/join/familiar/`, `web/lib/family-invite.ts`, `web/lib/smtp.ts` |
 | API Telegram | `web/app/api/telegram/webhook/`, `web/app/api/staff/telegram/`, `web/app/api/staff/telegram/video-join/` |
 | VideoCallSession | `web/components/VideoCallSession.tsx` |
 | Estado global | `web/context/AppContext.tsx` |
@@ -68,12 +70,13 @@ Guía rápida para orientarse en el repo y en SDD.
 | [call-alerts-and-history](../openspec/changes/archive/2026-06-22-call-alerts-and-history/) | 2026-06-22 | Alerta persistente bell/video + historial `/estadisticas` |
 | [admin-rbac-abm](../openspec/changes/archive/2026-06-19-admin-rbac-abm/) | 2026-06-19 | RBAC + ABM + shell staff oscuro + escucha persistente |
 | [telegram-call-actions](../openspec/changes/archive/2026-06-26-telegram-call-actions/) | 2026-06-26 | Botones Telegram Atender/Finalizar + join video mobile |
+| [call-analytics-enrichment](../openspec/changes/archive/2026-06-19-call-analytics-enrichment/) | 2026-06-19 | Canal Telegram/web + gráficos extendidos en `/estadisticas` |
 
 ## Changes activos
 
 | Change | Resumen |
 |--------|---------|
-| [call-analytics-enrichment](../openspec/changes/call-analytics-enrichment/) | Canal Telegram/web + gráficos extendidos en `/estadisticas` |
+| [family-video-invite](../openspec/changes/family-video-invite/) | Ocultar Médico; Familiar + videollamada por email SMTP |
 
 ## Docs operativos
 

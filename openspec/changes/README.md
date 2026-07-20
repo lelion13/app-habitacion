@@ -4,7 +4,7 @@
 
 | Change | Estado | Resumen |
 |--------|--------|---------|
-| [call-analytics-enrichment](./call-analytics-enrichment/) | Propuesta + design + specs | Canal Telegram/web + gráficos extendidos en `/estadisticas` |
+| [family-video-invite](./family-video-invite/) | Implementado (verify manual pendiente) | Ocultar Médico; Familiar + video por email SMTP |
 
 ---
 
@@ -22,6 +22,7 @@
 | [2026-06-22-telegram-staff-alerts](./archive/2026-06-22-telegram-staff-alerts/) | 2026-06-22 | Push Telegram escucha activa + vinculado |
 | [2026-06-22-pwa-tablet-room-bind](./archive/2026-06-22-pwa-tablet-room-bind/) | 2026-06-22 | PWA tablet habitación fija, fullscreen |
 | [2026-06-26-telegram-call-actions](./archive/2026-06-26-telegram-call-actions/) | 2026-06-26 | Botones Telegram Atender/Finalizar + join video mobile |
+| [2026-06-19-call-analytics-enrichment](./archive/2026-06-19-call-analytics-enrichment/) | 2026-06-19 | Canal Telegram/web + gráficos extendidos en `/estadisticas` |
 
 ## Crear un change nuevo
 

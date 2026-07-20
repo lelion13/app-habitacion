@@ -25,17 +25,17 @@
 
 ## Fase 4 — Verificación
 
-- [ ] 4.1 Manual: atender web → canal web en tabla/gráfico
-- [ ] 4.2 Manual: atender Telegram → canal telegram
-- [ ] 4.3 Manual: filtros piso/sector reflejados en gráficos
+- [x] 4.1 Manual: atender web → canal web en tabla/gráfico
+- [x] 4.2 Manual: atender Telegram → canal telegram
+- [x] 4.3 Manual: filtros piso/sector reflejados en gráficos
 - [x] 4.4 `npm run test:unit` + `npm run build`
 - [x] 4.5 `verify-report.md`
 
 ## Fase 5 — Cierre SDD
 
-- [ ] 5.1 Fusionar deltas → `openspec/specs/`
-- [ ] 5.2 Actualizar `docs/runbook.md` y `quick-map.md`
-- [ ] 5.3 Archivar change
+- [x] 5.1 Fusionar deltas → `openspec/specs/`
+- [x] 5.2 Actualizar `docs/runbook.md` y `quick-map.md`
+- [x] 5.3 Archivar change
 
 ## Dependencias
 

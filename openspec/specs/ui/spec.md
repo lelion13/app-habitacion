@@ -209,11 +209,18 @@ Room and staff video screens MUST use the same layout component/shell so behavio
 Route `/estadisticas` MUST require `systemRole` of `supervisor` or `admin` (redirect `user` to `/dashboard`).
 
 The page MUST use the shared staff shell and:
-- Show KPI summary cards driven by active filters (totals, avg response time, avg session duration, bell vs video counts)
-- Show paginated table of calls with: room, floor, sector, type, target role, status, timestamps, `responseTimeMs`, `totalDurationMs`, `sessionDurationMs`
+- Show KPI summary cards driven by active filters (totals, avg response time, avg session duration, bell vs video counts, optional % Telegram accepts)
+- Show paginated table of calls with: room, floor, sector, type, target role, status, **Atendió** (staff name), **Canal atención**, **Canal cierre**, timestamps, `responseTimeMs`, `totalDurationMs`, `sessionDurationMs`
+- Display channel as `Web`, `Telegram`, or `—` when unknown
+- Render an **analytics charts section** below KPIs when `includeCharts=true` (date range ≤ 90 days):
+  1. Calls per day (bell vs video)
+  2. Average response time per day
+  3. Accepted-channel split (web vs telegram vs unknown)
+  4. Breakdown bars by floor, sector, and target role
 - Provide filters: date range, floor, sector, target role, room number, type, status
 - Default date range SHOULD be last 7 days
-- Be mobile-first responsive
+- Be mobile-first responsive; charts MUST stack vertically on viewports &lt; 768px without horizontal page scroll
+- Charts MUST use staff dark theme (SVG via Recharts, no bitmap chart images) and show Spanish empty state when filters match zero calls
 
 #### Scenario: Acceso sin permiso
 - **GIVEN** authenticated `systemRole: user`
@@ -228,6 +235,25 @@ The page MUST use the shared staff shell and:
 - **GIVEN** user filters `type=video`
 - **WHEN** summary loads
 - **THEN** KPIs MUST recalculate for filtered subset only
+
+#### Scenario: Llamado sin canal histórico
+- **GIVEN** call without `acceptedChannel`
+- **WHEN** row renders
+- **THEN** channel column SHALL show `—`
+
+#### Scenario: Gráficos en móvil
+- **GIVEN** viewport &lt; 768px
+- **THEN** charts SHALL stack vertically without horizontal page scroll
+
+#### Scenario: Sin datos en rango
+- **GIVEN** filters match zero calls
+- **THEN** charts SHALL show empty state message in Spanish
+
+#### Scenario: Rango mayor a 90 días
+- **GIVEN** user selects a date range exceeding 90 days
+- **WHEN** page loads history
+- **THEN** table and KPIs MUST still load
+- **AND** charts section MUST be omitted with a visible notice in Spanish
 
 ### REQ-UI-015: Patrones de alerta sonora
 
@@ -383,6 +409,6 @@ Route `/join/video` MUST be mobile-first and usable without prior dashboard navi
 
 | Type | Scope |
 |------|-------|
-| Jest | `lib/auth`, `lib/validation`, `lib/calls`, `lib/bell`, `lib/webrtc-signal`, `lib/telegram`, `lib/room-bind`, `lib/room-manifest`, `lib/call-metrics`, `lib/call-history`, `lib/room-key-gen`, `lib/system-roles` |
+| Jest | `lib/auth`, `lib/validation`, `lib/calls`, `lib/bell`, `lib/webrtc-signal`, `lib/telegram`, `lib/room-bind`, `lib/room-manifest`, `lib/call-metrics`, `lib/call-history`, `lib/call-analytics`, `lib/room-key-gen`, `lib/system-roles` |
 | Playwright | Landing, login page, habitacion load |
 | Manual | Bell/video alert loop, SSE, PWA install, video bidireccional prod, `/estadisticas` |

@@ -7,8 +7,8 @@ import {
   createVideoJoinToken,
 } from "./telegram-video-join";
 import {
+  CALL_TARGET_LABELS,
   CALL_TYPE_LABELS,
-  ROLE_LABELS,
   type Call,
   type CallStatus,
   type CallTelegramAlert,
@@ -45,7 +45,7 @@ export function formatCallAlertBody(
   options?: { accepterName?: string },
 ): string {
   const typeLabel = CALL_TYPE_LABELS[call.type];
-  const roleLabel = ROLE_LABELS[call.targetRole];
+  const roleLabel = CALL_TARGET_LABELS[call.targetRole];
   const when = new Date(call.createdAt).toLocaleString("es-AR", {
     dateStyle: "short",
     timeStyle: "short",
@@ -252,6 +252,7 @@ async function resolveVideoJoinUrl(
 }
 
 export async function notifyTelegramStaffForCall(call: Call): Promise<void> {
+  if (call.targetRole === "family") return;
   if (!isTelegramConfigured()) return;
 
   const serialized = serializeCall(call);

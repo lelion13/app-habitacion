@@ -4,6 +4,7 @@ import { serializeCall } from "./calls";
 import { metricsOnAccept, metricsOnTerminal } from "./call-metrics";
 import { publishCallEvent, publishRoomEvent } from "./sse";
 import { clearSignalBuffer } from "./signal-buffer";
+import { isStaffRole } from "./validation";
 import type { Call, CallChannel, CallStatus } from "./types";
 
 export type AcceptCallResult =
@@ -16,13 +17,15 @@ export type TerminalCallResult =
 
 function publishCallUpdated(call: Call): void {
   const serialized = serializeCall(call);
-  publishCallEvent(
-    call.floor,
-    call.sector,
-    call.targetRole,
-    "call:updated",
-    serialized,
-  );
+  if (isStaffRole(call.targetRole)) {
+    publishCallEvent(
+      call.floor,
+      call.sector,
+      call.targetRole,
+      "call:updated",
+      serialized,
+    );
+  }
   publishRoomEvent(call.roomId.toString(), "call:updated", serialized);
 }
 
@@ -62,6 +65,57 @@ export async function acceptCall(
   const updated = await db.collection<Call>("calls").findOneAndUpdate(
     { _id: callId, status: "pending" },
     { $set: acceptSet },
+    { returnDocument: "after" },
+  );
+
+  if (!updated) {
+    const current = await db.collection<Call>("calls").findOne({ _id: callId });
+    if (!current) return { ok: false, reason: "not_found" };
+    if (current.status === "accepted") {
+      return { ok: false, reason: "already_accepted" };
+    }
+    return { ok: false, reason: "not_pending" };
+  }
+
+  publishCallUpdated(updated);
+  return { ok: true, call: updated };
+}
+
+/** Accept Familiar sin usuario staff (al consumir magic link). */
+export async function acceptFamilyCall(
+  callId: ObjectId,
+): Promise<AcceptCallResult> {
+  const db = await getDb();
+  const existing = await db.collection<Call>("calls").findOne({ _id: callId });
+
+  if (!existing) {
+    return { ok: false, reason: "not_found" };
+  }
+
+  if (existing.targetRole !== "family") {
+    return { ok: false, reason: "not_pending" };
+  }
+
+  if (existing.status === "accepted") {
+    return { ok: false, reason: "already_accepted" };
+  }
+
+  if (existing.status !== "pending") {
+    return { ok: false, reason: "not_pending" };
+  }
+
+  const acceptedAt = new Date();
+  const acceptMetrics = metricsOnAccept(existing, acceptedAt);
+
+  const updated = await db.collection<Call>("calls").findOneAndUpdate(
+    { _id: callId, status: "pending", targetRole: "family" },
+    {
+      $set: {
+        status: "accepted" as const,
+        acceptedAt,
+        ...acceptMetrics,
+      },
+    },
     { returnDocument: "after" },
   );
 

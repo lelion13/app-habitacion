@@ -27,6 +27,8 @@ interface VideoCallSessionProps {
   roomKey?: string;
   token?: string;
   listenConfig?: ListenConfig;
+  /** SSE por callId (Familiar guest) en lugar de listen channel. */
+  familySignalStream?: boolean;
   roomId?: string;
   fullscreen?: boolean;
   autoStart?: boolean;
@@ -44,6 +46,7 @@ export function VideoCallSession({
   roomKey,
   token,
   listenConfig,
+  familySignalStream = false,
   roomId,
   fullscreen = false,
   autoStart = false,
@@ -338,7 +341,11 @@ export function VideoCallSession({
       source = new EventSource(
         `/api/calls/room/stream?roomId=${encodeURIComponent(roomId)}`,
       );
-     } else if (role === "staff" && listenConfig && token) {
+    } else if (role === "staff" && familySignalStream && token) {
+      source = new EventSource(
+        `/api/calls/${callId}/events?token=${encodeURIComponent(token)}`,
+      );
+    } else if (role === "staff" && listenConfig && token) {
       const params = new URLSearchParams({
         floor: listenConfig.floor,
         sector: listenConfig.sector,
@@ -361,7 +368,7 @@ export function VideoCallSession({
       source.removeEventListener("webrtc:signal", onSignal);
       source.close();
     };
-  }, [started, role, roomId, listenConfig, token]);
+  }, [started, role, roomId, listenConfig, token, familySignalStream, callId]);
 
   useEffect(() => {
     if (!started || connectionState === "connected") return;

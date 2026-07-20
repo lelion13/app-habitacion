@@ -20,12 +20,12 @@ import {
   staffText,
 } from "@/lib/staff-theme";
 import {
+  CALL_TARGET_LABELS,
   CALL_TYPE_LABELS,
-  ROLE_LABELS,
   type CallChannel,
   type CallStatus,
+  type CallTargetRole,
   type CallType,
-  type StaffRole,
 } from "@/lib/types";
 
 interface HistoryCall {
@@ -34,7 +34,7 @@ interface HistoryCall {
   floor: string;
   sector: string;
   type: CallType;
-  targetRole: StaffRole;
+  targetRole: CallTargetRole;
   status: CallStatus;
   createdAt: string;
   acceptedAt?: string;
@@ -86,7 +86,7 @@ export default function EstadisticasPage() {
   const [to, setTo] = useState(todayDate);
   const [floor, setFloor] = useState("");
   const [sector, setSector] = useState("");
-  const [targetRole, setTargetRole] = useState<StaffRole | "">("");
+  const [targetRole, setTargetRole] = useState<CallTargetRole | "">("");
   const [roomNumber, setRoomNumber] = useState("");
   const [type, setType] = useState<CallType | "">("");
   const [status, setStatus] = useState<CallStatus | "">("");
@@ -169,7 +169,7 @@ export default function EstadisticasPage() {
     else void loadHistory();
   }
 
-  const roles: StaffRole[] = ["nurse", "quality", "doctor"];
+  const roles: CallTargetRole[] = ["nurse", "quality", "doctor", "family"];
 
   return (
     <main className={staffContent}>
@@ -222,13 +222,13 @@ export default function EstadisticasPage() {
           <label className={staffLabelXs}>Rol destino</label>
           <select
             value={targetRole}
-            onChange={(e) => setTargetRole(e.target.value as StaffRole | "")}
+            onChange={(e) => setTargetRole(e.target.value as CallTargetRole | "")}
             className={`mt-1 w-full ${staffInput}`}
           >
             <option value="">Todos</option>
             {roles.map((r) => (
               <option key={r} value={r}>
-                {ROLE_LABELS[r]}
+                {CALL_TARGET_LABELS[r]}
               </option>
             ))}
           </select>
@@ -348,7 +348,7 @@ export default function EstadisticasPage() {
                     {call.floor}/{call.sector}
                   </td>
                   <td className="px-4 py-3">{CALL_TYPE_LABELS[call.type]}</td>
-                  <td className="px-4 py-3">{ROLE_LABELS[call.targetRole]}</td>
+                  <td className="px-4 py-3">{CALL_TARGET_LABELS[call.targetRole]}</td>
                   <td className="px-4 py-3">{STATUS_LABELS[call.status]}</td>
                   <td className="px-4 py-3">{call.acceptedByName ?? "—"}</td>
                   <td className="px-4 py-3">

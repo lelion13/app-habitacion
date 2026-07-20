@@ -16,7 +16,7 @@ import {
   YAxis,
 } from "recharts";
 import { formatDurationMs } from "@/lib/format-duration";
-import { ROLE_LABELS, type StaffRole } from "@/lib/types";
+import { CALL_TARGET_LABELS, type CallTargetRole } from "@/lib/types";
 import { staffCard, staffText, staffTitle } from "@/lib/staff-theme";
 import type { CallChartsData } from "@/lib/call-analytics";
 
@@ -92,7 +92,7 @@ export function EstadisticasCharts({ charts, loading }: EstadisticasChartsProps)
     count: r.count,
   }));
   const roleData = charts.byRole.map((r) => ({
-    name: ROLE_LABELS[r.role as StaffRole] ?? r.role,
+    name: CALL_TARGET_LABELS[r.role as CallTargetRole] ?? r.role,
     count: r.count,
   }));
 

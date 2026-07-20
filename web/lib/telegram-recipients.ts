@@ -6,6 +6,7 @@ import {
   type StaffSession,
   type User,
 } from "./types";
+import { isStaffRole } from "./validation";
 
 import type { ObjectId } from "mongodb";
 
@@ -18,6 +19,8 @@ export interface TelegramRecipient {
 export async function findTelegramRecipientsForCall(
   call: Pick<Call, "floor" | "sector" | "targetRole">,
 ): Promise<TelegramRecipient[]> {
+  if (!isStaffRole(call.targetRole)) return [];
+
   const db = await getDb();
 
   const sessions = await db

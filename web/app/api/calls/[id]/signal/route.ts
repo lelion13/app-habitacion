@@ -1,18 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/db";
-import { getBearerToken, verifyToken } from "@/lib/auth";
+import {
+  getBearerToken,
+  isFamilyJoinPayload,
+  isVideoJoinPayload,
+  verifyToken,
+} from "@/lib/auth";
 import { resolveRoomKey } from "@/lib/room-key";
-import { publishCallEvent, publishRoomEvent } from "@/lib/sse";
+import {
+  publishCallChannelEvent,
+  publishCallEvent,
+  publishRoomEvent,
+} from "@/lib/sse";
 import {
   bufferSignal,
-  clearSignalBuffer,
   getBufferedSignals,
 } from "@/lib/signal-buffer";
 import {
   buildSignalMessage,
   validateSignalPostBody,
 } from "@/lib/webrtc-signal";
+import { isStaffRole } from "@/lib/validation";
 import type { Call, Room } from "@/lib/types";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -42,6 +51,29 @@ async function authorizeRoom(
   return room._id.equals(call.roomId);
 }
 
+function authorizeStaffOrFamily(
+  callId: string,
+  call: Call,
+  token: string | null,
+): boolean {
+  if (!token) return false;
+  const payload = verifyToken(token);
+  if (!payload) return false;
+
+  if (isFamilyJoinPayload(payload)) {
+    return (
+      call.targetRole === "family" &&
+      payload.callId === callId
+    );
+  }
+
+  if (isVideoJoinPayload(payload) && payload.callId !== callId) {
+    return false;
+  }
+
+  return true;
+}
+
 export async function POST(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
   const call = await loadAcceptedVideoCall(id);
@@ -68,7 +100,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
   } else {
     const token = getBearerToken(request.headers.get("authorization"));
-    if (!token || !verifyToken(token)) {
+    if (!authorizeStaffOrFamily(id, call, token)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
   }
@@ -77,13 +109,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
   bufferSignal(message);
 
   if (body.from === "room") {
-    publishCallEvent(
-      call.floor,
-      call.sector,
-      call.targetRole,
-      "webrtc:signal",
-      message,
-    );
+    if (call.targetRole === "family") {
+      publishCallChannelEvent(id, "webrtc:signal", message);
+    } else if (isStaffRole(call.targetRole)) {
+      publishCallEvent(
+        call.floor,
+        call.sector,
+        call.targetRole,
+        "webrtc:signal",
+        message,
+      );
+    }
   } else {
     publishRoomEvent(call.roomId.toString(), "webrtc:signal", message);
   }
@@ -112,9 +148,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     request.nextUrl.searchParams.get("token");
 
   const asRoom = roomKey && (await authorizeRoom(call, roomKey));
-  const asStaff = token && verifyToken(token);
+  const asPeer = authorizeStaffOrFamily(id, call, token);
 
-  if (!asRoom && !asStaff) {
+  if (!asRoom && !asPeer) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

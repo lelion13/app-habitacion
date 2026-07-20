@@ -11,6 +11,7 @@ interface HabitacionCallButtonProps {
   visualState: CallVisualState;
   disabled: boolean;
   onClick: () => void;
+  fullWidth?: boolean;
 }
 
 export function HabitacionCallButton({
@@ -20,9 +21,11 @@ export function HabitacionCallButton({
   visualState,
   disabled,
   onClick,
+  fullWidth = false,
 }: HabitacionCallButtonProps) {
+  const widthClass = fullWidth ? "w-full max-w-md" : "";
   const base =
-    "habitacion-call-btn flex flex-col items-center justify-center gap-1 rounded-xl font-black transition-colors duration-150 select-none touch-manipulation";
+    `habitacion-call-btn ${widthClass} flex flex-col items-center justify-center gap-1 rounded-xl font-black transition-colors duration-150 select-none touch-manipulation`;
 
   if (visualState !== "idle") {
     const isConnected = visualState === "connected";

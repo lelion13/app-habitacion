@@ -1,4 +1,5 @@
 import type { Call, CallChannel, CallStatus, StaffRole } from "./types";
+import { isStaffRole } from "./validation";
 
 export const ACTIVE_CALL_STATUSES: CallStatus[] = ["pending", "accepted"];
 
@@ -12,6 +13,7 @@ export function matchesListenTarget(
   sector: string,
   role: StaffRole,
 ): boolean {
+  if (!isStaffRole(call.targetRole)) return false;
   return (
     call.status === "pending" &&
     call.floor === floor &&

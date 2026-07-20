@@ -1,6 +1,8 @@
 import type { ObjectId } from "mongodb";
 
 export type StaffRole = "nurse" | "quality" | "doctor";
+/** Roles de destino de un llamado (incluye Familiar; no es rol de escucha staff). */
+export type CallTargetRole = StaffRole | "family";
 export type SystemRole = "user" | "supervisor" | "admin";
 export type CallType = "bell" | "video";
 export type CallStatus = "pending" | "accepted" | "completed" | "cancelled";
@@ -72,6 +74,16 @@ export interface TelegramVideoJoinToken {
   createdAt: Date;
 }
 
+export interface FamilyJoinToken {
+  _id?: ObjectId;
+  token: string;
+  callId: ObjectId;
+  roomId: ObjectId;
+  expiresAt: Date;
+  used: boolean;
+  createdAt: Date;
+}
+
 export interface CallTelegramAlert {
   userId: ObjectId;
   chatId: string;
@@ -95,7 +107,7 @@ export interface Call {
   floor: string;
   sector: string;
   type: CallType;
-  targetRole: StaffRole;
+  targetRole: CallTargetRole;
   status: CallStatus;
   createdAt: Date;
   acceptedBy?: ObjectId;
@@ -106,6 +118,10 @@ export interface Call {
   responseTimeMs?: number;
   totalDurationMs?: number;
   sessionDurationMs?: number;
+  /** Solo Familiar: email destino (no loguear en claro). */
+  inviteEmail?: string;
+  inviteMessage?: string;
+  familyInviteSentAt?: Date;
   signalData?: {
     offer?: string;
     answer?: string;
@@ -131,6 +147,11 @@ export const ROLE_LABELS: Record<StaffRole, string> = {
   nurse: "Enfermería",
   quality: "Asistente de calidad",
   doctor: "Médico",
+};
+
+export const CALL_TARGET_LABELS: Record<CallTargetRole, string> = {
+  ...ROLE_LABELS,
+  family: "Familiar",
 };
 
 export const SYSTEM_ROLE_LABELS: Record<SystemRole, string> = {

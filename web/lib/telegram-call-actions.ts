@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "./db";
 import { acceptCall, completeCall } from "./calls-service";
 import { syncTelegramMessagesForCall as syncMessages } from "./telegram";
+import { isStaffRole } from "./validation";
 import type { Call, StaffSession, User } from "./types";
 
 export type TelegramCallbackAction = "accept" | "complete";
@@ -32,6 +33,7 @@ async function hasActiveListenForCall(
   userId: ObjectId,
   call: Pick<Call, "floor" | "sector" | "targetRole">,
 ): Promise<boolean> {
+  if (!isStaffRole(call.targetRole)) return false;
   const db = await getDb();
   const session = await db.collection<StaffSession>("staff_sessions").findOne({
     userId,

@@ -9,7 +9,7 @@ export interface JwtPayload {
   email: string;
   name: string;
   systemRole: SystemRole;
-  scope?: "video-join";
+  scope?: "video-join" | "family-join";
   callId?: string;
 }
 
@@ -46,8 +46,25 @@ export function signVideoJoinToken(user: AuthUser, callId: string): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
 }
 
+/** JWT corto para familiar: sub = callId (sin usuario staff). */
+export function signFamilyJoinToken(callId: string): string {
+  const payload: JwtPayload = {
+    sub: callId,
+    email: "familiar@local",
+    name: "Familiar",
+    systemRole: "user",
+    scope: "family-join",
+    callId,
+  };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "3h" });
+}
+
 export function isVideoJoinPayload(payload: JwtPayload): boolean {
   return payload.scope === "video-join" && Boolean(payload.callId);
+}
+
+export function isFamilyJoinPayload(payload: JwtPayload): boolean {
+  return payload.scope === "family-join" && Boolean(payload.callId);
 }
 
 export function verifyToken(token: string): JwtPayload | null {

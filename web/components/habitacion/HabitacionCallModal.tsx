@@ -1,14 +1,14 @@
 "use client";
 
 import { CheckCircle, Phone, X } from "lucide-react";
-import type { StaffRole, CallType } from "@/lib/types";
-import { CALL_TYPE_LABELS, ROLE_LABELS } from "@/lib/types";
-import { HABITACION_MUTED, ROLE_THEME } from "@/lib/habitacion-theme";
+import type { CallTargetRole, CallType } from "@/lib/types";
+import { CALL_TYPE_LABELS, CALL_TARGET_LABELS } from "@/lib/types";
+import { CALL_TARGET_THEME, HABITACION_MUTED } from "@/lib/habitacion-theme";
 import { HabitacionModal } from "./HabitacionModal";
 
 interface HabitacionCallModalProps {
   open: boolean;
-  targetRole: StaffRole;
+  targetRole: CallTargetRole;
   callType: CallType;
   status: string;
   elapsedSeconds: number;
@@ -33,14 +33,18 @@ export function HabitacionCallModal({
   cancelling,
   onCancel,
 }: HabitacionCallModalProps) {
-  const theme = ROLE_THEME[targetRole];
+  const theme = CALL_TARGET_THEME[targetRole];
   const isPending = status === "pending";
-  const roleLabel = ROLE_LABELS[targetRole];
+  const roleLabel = CALL_TARGET_LABELS[targetRole];
   const typeLabel = CALL_TYPE_LABELS[callType].toLowerCase();
 
   const title = isPending
-    ? `Llamando a ${roleLabel}`
-    : `${roleLabel} en atención`;
+    ? targetRole === "family"
+      ? "Invitación enviada"
+      : `Llamando a ${roleLabel}`
+    : targetRole === "family"
+      ? "Familiar en videollamada"
+      : `${roleLabel} en atención`;
 
   const actionLabel = isPending
     ? cancelling
@@ -71,11 +75,13 @@ export function HabitacionCallModal({
 
         <div>
           <p className={`text-xl font-black ${theme.textClass}`}>
-            {isPending ? `Llamando a ${roleLabel}` : `${roleLabel} en atención`}
+            {title}
           </p>
           <p className="mt-1 text-base font-semibold" style={{ color: HABITACION_MUTED }}>
             {isPending
-              ? `Esperando respuesta · ${typeLabel}`
+              ? targetRole === "family"
+                ? `Esperando que abra el enlace · ${typeLabel}`
+                : `Esperando respuesta · ${typeLabel}`
               : `${typeLabel} · ${formatElapsed(elapsedSeconds)}`}
           </p>
           {isPending && (
